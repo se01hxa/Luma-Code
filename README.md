@@ -4,10 +4,10 @@ VS Code와 비슷한 화면 구성의 Windows용 데스크톱 코드 편집기�
 
 ## 설치
 
-[Windows 설치 파일 다운로드](https://github.com/se01hxa/Luma-Code/releases/latest/download/LumaCode-Setup-1.3.0.exe) · [모든 다운로드](https://github.com/se01hxa/Luma-Code/releases/latest)
+[Windows 설치 파일 다운로드](https://github.com/se01hxa/Luma-Code/releases/latest/download/LumaCode-Setup-1.4.0.exe) · [모든 다운로드](https://github.com/se01hxa/Luma-Code/releases/latest)
 
 
-**LumaCode-Setup-1.3.0.exe**를 실행하면 설치 폴더, 바탕화면·시작 메뉴 바로가기, 소리, 코드 애니메이션, 토큰 보호와 선택 언어 설치를 설정할 수 있습니다. 언어 목록은 여러 항목을 클릭해 선택하며 기본값은 편집기만 설치입니다. 선택한 언어가 있으면 배포처와 WinGet 설치 약관 동의가 필요합니다. 일부 언어는 Windows 관리자 승인이 표시될 수 있습니다. 언어 하나의 설치가 실패해도 편집기는 설치되며, 앱의 **설정 → 언어 설치**에서 기록을 보고 다시 시도할 수 있습니다. 설치된 앱은 Windows의 설치된 앱에서 제거할 수 있습니다. 언어 실행기·SDK와 사용자 설정은 앱을 제거해도 보관합니다.
+**LumaCode-Setup-1.4.0.exe**를 실행하면 설치 폴더, 바탕화면·시작 메뉴 바로가기, 소리, 코드 애니메이션, 토큰 보호와 선택 언어 설치를 설정할 수 있습니다. 언어 목록은 여러 항목을 클릭해 선택하며 기본값은 편집기만 설치입니다. 선택한 언어가 있으면 배포처와 WinGet 설치 약관 동의가 필요합니다. 일부 언어는 Windows 관리자 승인이 표시될 수 있습니다. 언어 하나의 설치가 실패해도 편집기는 설치되며, 앱의 **설정 → 언어 설치**에서 기록을 보고 다시 시도할 수 있습니다. 설치된 앱은 Windows의 설치된 앱에서 제거할 수 있습니다. 언어 실행기·SDK와 사용자 설정은 앱을 제거해도 보관합니다.
 
 압축판은 설치 과정 없이 실행할 때 사용할 수 있습니다.
 
