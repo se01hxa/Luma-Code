@@ -9,7 +9,8 @@ const pty = require('@lydell/node-pty');
 const rpc = require('vscode-jsonrpc/node');
 const core = require('./core.cjs');
 const { createPrivacy } = require('./privacy.cjs');
-let privacy, installer;
+const presenceTools = require('./discord-presence.cjs');
+let privacy, installer, presence;
 const installTools=require('./installers.cjs');
 const runtimeTools = require('./runtimes.cjs');
 const { buildPlan, powershellCommand } = require('./runners.cjs');
@@ -359,6 +360,9 @@ function registerHandlers() {
     }
     return { matches, truncated: s.truncated };
   });
+  handle('presence:status',()=>presence.status());
+  handle('presence:set',async patch=>{config.discord=presenceTools.options({...presence.status().options,...patch});await saveConfig();return presence.configure(Object.hasOwn(patch,'applicationId'));});
+  handle('presence:update',meta=>{if(!meta||typeof meta!=='object')throw Error('올바르지 않은 활동 정보입니다.');return presence.update({...meta,project:workspace?.filesOnly?path.basename(workspace.root):workspace?.name||'',file:typeof meta.file==='string'?meta.file:''});});
   handle('privacy:status',()=>privacy.status());
   handle('privacy:set',async mode=>{if(!['always','auto','off'].includes(mode))throw Error('올바른 보호 방식을 선택해주세요.');config.privacy={mode};await saveConfig();return privacy.update();});
   handle('settings:save', async patch => {
@@ -458,6 +462,8 @@ app.whenReady().then(async () => {
     const index=process.argv.indexOf('--setup-languages'),ids=index>=0?(process.argv[index+1]||'').split(',').filter(Boolean):[];
     try{const result=ids.length?await installer.start(ids):{items:[]};app.exit(result.items.some(i=>i.status==='error')?10:0);}catch(e){console.error(e.message);app.exit(10);}return;
   }
+  presence=presenceTools.createPresence({getOptions:()=>config.discord||presenceTools.DEFAULTS,onChange:state=>emit('presence:changed',state)});
+  presence.configure();
   privacy = await createPrivacy(() => config.privacy || {mode:'always'}, emit);
   Menu.setApplicationMenu(null);
   win = new BrowserWindow({ width: 1440, height: 940, minWidth: 980, minHeight: 650, backgroundColor: '#15171c', frame: false, show: false, title: 'Luma Code', icon: path.join(__dirname, '../assets/icon.png'), webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false } });
@@ -471,4 +477,4 @@ app.whenReady().then(async () => {
   if (process.argv.includes('--dev')) await win.loadURL('http://127.0.0.1:5173');
   else await win.loadFile(path.join(__dirname, '../dist/index.html'));
 }).catch(e => { dialog.showErrorBox('Luma Code 시작 실패', e.stack || e.message); app.quit(); });
-app.on('window-all-closed', () => { privacy?.stop(); clearWorkspace().finally(() => app.quit()); });
+app.on('window-all-closed', () => { presence?.stop(); privacy?.stop(); clearWorkspace().finally(() => app.quit()); });

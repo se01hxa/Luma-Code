@@ -8,6 +8,7 @@ import TerminalPanel, { clearTerminal, forgetTerminal } from './TerminalPanel';
 import { configureSounds, installButtonSounds, playSound } from './sounds';
 import { finishReveal } from './reveal';
 import {privateText,usePrivacy} from './privacy';
+import {presenceMetadata} from './presence';
 
 const DEFAULT_THEME: Theme = { preset: 'midnight', accent: '#7dd3bc', background: '#15171c', image: '', opacity: 88, blur: 0, fontSize: 14, fontFamily: 'Cascadia Code', minimap: false, wordWrap: false, tabSize: 2, autoSave: false, openAnimation: true, animationDuration: 1100, soundEnabled: true, soundVolume: 35, clickSound: 'tock', typingSound: true };
 const flatten = (entries: Entry[]): string[] => entries.flatMap(e => e.kind === 'file' ? [e.path] : flatten(e.children || []));
@@ -31,6 +32,7 @@ export default function App() {
   const terminalsRef = useRef(terminals); terminalsRef.current = terminals;
   const privacy=usePrivacy();
   const theme = config.theme, activeTab = tabs.find(t => t.path === active);
+  useEffect(()=>{if(!activeTab)presenceMetadata({file:'',line:0,column:0,editLine:0,mouseLine:0,mouseColumn:0,editing:false,sensitive:false});},[workspace?.root,activeTab?.path]);
   const notify = useCallback((message: string, error = false) => { clearTimeout(toastTimer.current); setToast({ message, error }); if (error) void playSound('error'); toastTimer.current = setTimeout(() => setToast(undefined), error ? 14000 : 6000); }, []);
   const report = useCallback((e: unknown) => notify((e as Error).message.replace(/^Error invoking remote method '[^']+': Error: /, ''), true), [notify]);
   const openSpecial = useCallback((name: string) => { setSpecials(s => s.includes(name) ? s : [...s, name]); setActive(name); }, []);

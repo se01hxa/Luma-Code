@@ -1,6 +1,6 @@
 {
   "name": "luma-code",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
   "description": "A focused desktop code editor with a project map, custom themes and SSH workspaces.",
   "author": "Luma Code",
@@ -9,12 +9,13 @@
     "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron . --dev\"",
     "build": "tsc --noEmit && vite build",
     "start": "electron .",
-    "test": "node --test tests/core.test.cjs tests/runtimes.test.cjs tests/privacy-install.test.cjs",
+    "test": "node --test tests/core.test.cjs tests/runtimes.test.cjs tests/privacy-install.test.cjs tests/discord-presence.test.cjs",
     "test:app": "node tests/app.cjs",
     "package": "npm run build && electron-builder --win nsis",
     "test:effects": "node tests/enhancements.cjs",
     "test:runtimes": "node tests/runtimes-app.cjs",
-    "test:privacy": "node tests/privacy-app.cjs"
+    "test:privacy": "node tests/privacy-app.cjs",
+    "test:discord": "node tests/discord-app.cjs"
   },
   "dependencies": {
     "@lydell/node-pty": "^1.1.0",

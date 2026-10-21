@@ -3,6 +3,7 @@ const invoke = name => (...args) => ipcRenderer.invoke(name, ...args);
 const on = name => callback => { const handler = (_event, value) => callback(value); ipcRenderer.on(name, handler); return () => ipcRenderer.removeListener(name, handler); };
 contextBridge.exposeInMainWorld('luma', {
   installCatalog: invoke('install:catalog'), installStatus: invoke('install:status'), installLanguages: invoke('install:start'), openLanguageSite: invoke('install:site'), onInstall: on('install:changed'),
+  presenceStatus: invoke('presence:status'), setPresence: invoke('presence:set'), presenceUpdate: invoke('presence:update'), onPresence: on('presence:changed'),
   privacyStatus: invoke('privacy:status'), setPrivacy: invoke('privacy:set'), onPrivacy: on('privacy:changed'),
   bootstrap: invoke('bootstrap'), chooseFolder: invoke('workspace:choose'), openFolder: invoke('workspace:open'), refresh: invoke('workspace:refresh'),
   chooseFile: invoke('file:choose'), openPickedFile: invoke('file:open'),

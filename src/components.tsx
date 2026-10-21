@@ -6,6 +6,8 @@ import { revealCode, finishReveal } from './reveal';
 import EffectsSettings from './EffectsSettings';
 import LanguageIcon from './LanguageIcon';
 import PrivacySettings from './PrivacySettings';
+import DiscordSettings from './DiscordSettings';
+import {presenceMetadata} from './presence';
 import InstallLanguages from './InstallLanguages';
 import {usePrivacy,protectedDocument,rememberSecrets,privacyActive} from './privacy';
 import RuntimeSettings from './RuntimeSettings';
@@ -43,6 +45,7 @@ export function FileTree({ tree, active, onOpen, onContext, openDirs, toggleDir,
 export function EditorView({ active, theme, onChange, onPosition, onProblems, editorRef }: { active?: Tab; theme: Theme; onChange: (path: string, value: string) => void; onPosition: (line: number, column: number) => void; onProblems: (problems: monaco.editor.IMarker[]) => void; editorRef: { current: monaco.editor.IStandaloneCodeEditor | null } }) {
   const container = useRef<HTMLDivElement>(null), callbacks = useRef({ onChange, onPosition, onProblems }), views = useRef(new Map<string, monaco.editor.ICodeEditorViewState>());
   const seen = useRef(new Set<string>()), previews = useRef(new Map<string,monaco.editor.ITextModel>());
+  const activeName=useRef(active?.path);activeName.current=active?.path;
   const privacy=usePrivacy();
   const [protectedCount,setProtectedCount]=useState(0);
   callbacks.current = { onChange, onPosition, onProblems };
@@ -50,9 +53,13 @@ export function EditorView({ active, theme, onChange, onPosition, onProblems, ed
     const editor = monaco.editor.create(container.current!, { theme: 'luma', automaticLayout: true, editContext: false, fontFamily: '"Cascadia Code", "Consolas", monospace', fontSize: theme.fontSize, lineHeight: 24, padding: { top: 20, bottom: 30 }, minimap: { enabled: theme.minimap }, scrollBeyondLastLine: false, smoothScrolling: true, cursorBlinking: 'smooth', cursorSmoothCaretAnimation: 'on', renderLineHighlight: 'all', bracketPairColorization: { enabled: true }, guides: { bracketPairs: true }, stickyScroll: { enabled: true }, wordBasedSuggestions: 'allDocuments', suggest: { showWords: true, preview: false }, inlineSuggest: { enabled: false }, quickSuggestions: { other: true, comments: false, strings: true }, tabSize: theme.tabSize, insertSpaces: true, model: null, overviewRulerBorder: false, renderWhitespace: 'selection', links: false, unicodeHighlight: { ambiguousCharacters: false, invisibleCharacters: false } });
     editorRef.current = editor;
     const change = editor.onDidChangeModelContent(() => { const model = editor.getModel(); if (!model) return; const path = [...models].find(([, m]) => m === model)?.[0]; if (path) { callbacks.current.onChange(path, model.getValue());rememberSecrets(path,model.getValue());const masked=privacyActive()?protectedDocument(path,model.getValue()):null;if(masked?.count){let preview=previews.current.get(path);if(!preview){preview=monaco.editor.createModel(masked.content,model.getLanguageId(),monaco.Uri.parse('inmemory://protected/'+encodeURIComponent(path)));previews.current.set(path,preview);}else preview.setValue(masked.content);editor.updateOptions({readOnly:true,contextmenu:false});editor.setModel(preview);setProtectedCount(masked.count);} } });
-    const position = editor.onDidChangeCursorPosition(e => callbacks.current.onPosition(e.position.lineNumber, e.position.column));
+    const presencePosition=()=>{const p=editor.getPosition();if(p)presenceMetadata({line:p.lineNumber,column:p.column});};
+    const position = editor.onDidChangeCursorPosition(e => {callbacks.current.onPosition(e.position.lineNumber, e.position.column);presencePosition();});
+    const presenceEdit=editor.onDidChangeModelContent(e=>{const raw=activeName.current?models.get(activeName.current):undefined;if(raw)presenceMetadata({editLine:e.changes[0]?.range.startLineNumber||editor.getPosition()?.lineNumber||1,editing:true,sensitive:!!protectedDocument(activeName.current||'',raw.getValue())?.count,userAction:true});});
+    const mouse=editor.onMouseMove(e=>presenceMetadata({mouseLine:e.target.position?.lineNumber||0,mouseColumn:e.target.position?.column||0}));
+    const leave=editor.onMouseLeave(()=>presenceMetadata({mouseLine:0,mouseColumn:0}));
     const markers = monaco.editor.onDidChangeMarkers(() => callbacks.current.onProblems(monaco.editor.getModelMarkers({}).filter(m => [...models.values()].some(model => model.uri.toString() === m.resource.toString()))));
-    return () => { finishReveal(); change.dispose(); position.dispose(); markers.dispose(); editor.dispose(); previews.current.forEach(m=>m.dispose()); editorRef.current = null; };
+    return () => { finishReveal(); change.dispose(); position.dispose(); presenceEdit.dispose(); mouse.dispose(); leave.dispose(); markers.dispose(); editor.dispose(); previews.current.forEach(m=>m.dispose()); editorRef.current = null; };
   }, []);
   useLayoutEffect(() => {
     const editor = editorRef.current; if (!editor) return;
@@ -65,6 +72,7 @@ export function EditorView({ active, theme, onChange, onPosition, onProblems, ed
     editor.updateOptions({readOnly:!!masked?.count,hover:{enabled:privacy.active?'off':'on'},wordBasedSuggestions:privacy.active?'currentDocument':'allDocuments',minimap:{enabled:theme.minimap},contextmenu:!masked?.count});
     if(model&&masked?.count){let preview=previews.current.get(active!.path);if(!preview){preview=monaco.editor.createModel(masked.content,model.getLanguageId(),monaco.Uri.parse('inmemory://protected/'+encodeURIComponent(active!.path)));previews.current.set(active!.path,preview);}else if(preview.getValue()!==masked.content)preview.setValue(masked.content);model=preview;}
 
+    presenceMetadata({file:active?.path||'',line:1,column:1,editLine:0,mouseLine:0,mouseColumn:0,editing:false,sensitive:!!(active&&models.get(active.path)&&protectedDocument(active.path,models.get(active.path)!.getValue())?.count)});
     editor.setModel(model);
     if (model) {
       editor.restoreViewState(views.current.get(model.uri.toString()) || null); editor.focus(); schedulePython(model);
@@ -84,7 +92,7 @@ export const PRESETS = [
 ];
 export function Settings({ theme, update, error }: { theme: Theme; update: (theme: Partial<Theme>) => void; error: (e: unknown) => void }) {
   const [section, setSection] = useState('appearance');
-  return <div className="settings-page"><nav className="settings-nav"><span className="eyebrow">PREFERENCES</span><h1>나의 작업 공간</h1><button className={section === 'appearance' ? 'active' : ''} onClick={() => setSection('appearance')}>모양과 배경</button><button className={section === 'editor' ? 'active' : ''} onClick={() => setSection('editor')}>편집기 설정</button><button className={section === 'effects' ? 'active' : ''} onClick={() => setSection('effects')}>효과와 소리</button><button className={section === 'runtimes' ? 'active' : ''} onClick={() => setSection('runtimes')}>언어와 실행기</button><button className={section === 'privacy' ? 'active' : ''} onClick={() => setSection('privacy')}>토큰 보호</button><button className={section === 'install' ? 'active' : ''} onClick={() => setSection('install')}>언어 설치</button><div className="settings-note"><Check size={14}/> 변경 사항은 자동 저장됩니다.</div></nav><div className="settings-content">
+  return <div className="settings-page"><nav className="settings-nav"><span className="eyebrow">PREFERENCES</span><h1>나의 작업 공간</h1><button className={section === 'appearance' ? 'active' : ''} onClick={() => setSection('appearance')}>모양과 배경</button><button className={section === 'editor' ? 'active' : ''} onClick={() => setSection('editor')}>편집기 설정</button><button className={section === 'effects' ? 'active' : ''} onClick={() => setSection('effects')}>효과와 소리</button><button className={section === 'runtimes' ? 'active' : ''} onClick={() => setSection('runtimes')}>언어와 실행기</button><button className={section === 'privacy' ? 'active' : ''} onClick={() => setSection('privacy')}>토큰 보호</button><button className={section === 'install' ? 'active' : ''} onClick={() => setSection('install')}>언어 설치</button><button className={section === 'discord' ? 'active' : ''} onClick={() => setSection('discord')}>Discord 활동</button><div className="settings-note"><Check size={14}/> 변경 사항은 자동 저장됩니다.</div></nav><div className="settings-content">
     {section === 'appearance' ? <><span className="eyebrow">MAKE IT YOURS</span><h2>집중하기 좋은 분위기.</h2><p className="description">색상부터 움직이는 배경까지, 나에게 맞게 설정하세요.</p>
       <h3>컬러 테마</h3><div className="preset-grid">{PRESETS.map(p => <button key={p.id} className={`preset ${theme.preset === p.id ? 'chosen' : ''}`} onClick={() => update({ preset: p.id, background: p.bg, accent: p.accent })}><div className="preset-preview" style={{ background: p.bg }}><div style={{ background: p.preview[0] }}/><section><i style={{ width: '55%', background: p.preview[1] }}/><i style={{ width: '80%', background: p.accent }}/><i style={{ width: '65%', background: p.preview[2] }}/></section>{theme.preset === p.id && <Check size={15} style={{ color: p.accent }}/>}</div><b>{p.name}</b><span>{p.sub}</span></button>)}</div>
       <div className="setting-row"><div><b>강조 색상</b><p>버튼과 선택 영역에 사용할 색상</p></div><label className="color-field"><input type="color" value={theme.accent} onChange={e => update({ accent: e.target.value })}/><code>{theme.accent.toUpperCase()}</code></label></div>
@@ -93,7 +101,7 @@ export function Settings({ theme, update, error }: { theme: Theme; update: (them
       {theme.image && <button className="text-button" onClick={() => update({ image: '' })}><X size={13}/> 배경 이미지 제거</button>}
       <div className="setting-row"><div><b>배경 덮개</b><p>값을 높이면 코드가 더 또렷해집니다.</p></div><input aria-label="배경 덮개" type="range" min="35" max="100" value={theme.opacity} onChange={e => update({ opacity: +e.target.value })}/><code className="range-value">{theme.opacity}%</code></div>
       <div className="setting-row"><div><b>이미지 흐림</b><p>배경에 부드러운 흐림 효과 적용</p></div><input aria-label="이미지 흐림" type="range" min="0" max="20" value={theme.blur} onChange={e => update({ blur: +e.target.value })}/><code className="range-value">{theme.blur}px</code></div>
-    </> : section === 'install' ? <InstallLanguages/> : section === 'privacy' ? <PrivacySettings/> : section === 'runtimes' ? <RuntimeSettings/> : section === 'effects' ? <EffectsSettings theme={theme} update={update}/> : <><span className="eyebrow">EDITOR</span><h2>손에 익는 편집기.</h2><p className="description">코드를 읽고 작성하는 방식을 조정하세요.</p>
+    </> : section === 'discord' ? <DiscordSettings/> : section === 'install' ? <InstallLanguages/> : section === 'privacy' ? <PrivacySettings/> : section === 'runtimes' ? <RuntimeSettings/> : section === 'effects' ? <EffectsSettings theme={theme} update={update}/> : <><span className="eyebrow">EDITOR</span><h2>손에 익는 편집기.</h2><p className="description">코드를 읽고 작성하는 방식을 조정하세요.</p>
       <div className="setting-row"><div><b>글꼴</b><p>컴퓨터에 설치된 고정폭 글꼴</p></div><select value={theme.fontFamily} onChange={e => update({ fontFamily: e.target.value })}>{['Cascadia Code', 'Consolas', 'D2Coding', 'JetBrains Mono', 'Fira Code', 'monospace'].map(s => <option key={s}>{s}</option>)}</select></div>
       <div className="setting-row"><div><b>글꼴 크기</b><p>코드와 줄 번호의 크기</p></div><input type="number" aria-label="글꼴 크기" min="10" max="28" value={theme.fontSize} onChange={e => { const n = +e.target.value; if (n >= 10 && n <= 28) update({ fontSize: n }); }}/><span className="muted">px</span></div>
       <div className="setting-row"><div><b>들여쓰기</b><p>Tab 키의 공백 수</p></div><select value={theme.tabSize} onChange={e => update({ tabSize: +e.target.value })}>{[2, 4, 8].map(n => <option key={n} value={n}>{n}칸</option>)}</select></div>

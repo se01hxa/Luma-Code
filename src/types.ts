@@ -16,7 +16,11 @@ export interface Runtime { items?: RuntimeItem[]; checkedAt?: string; python?: s
 export interface PrivacyStatus {mode:'always'|'auto'|'off';active:boolean;clients:string[];detecting:boolean;changed?:boolean}
 export interface InstallLanguage {id:string;name:string;installable:boolean;alias?:string;site:string;note?:string}
 export interface InstallJob {running:boolean;finishedAt?:string|null;logs:string[];items:{id:string;name:string;status:'queued'|'installing'|'done'|'error';error?:string;upToDate?:boolean}[]}
+export interface PresenceOptions { enabled:boolean;applicationId:string;showProject:boolean;showFile:boolean;showPosition:boolean;showMouse:boolean;hideSensitive:boolean;pipe:string }
+export interface PresenceActivity {details:string;state:string;assets:{large_image:string;large_text:string}}
+export interface PresenceStatus {options:PresenceOptions;status:'disabled'|'connecting'|'waiting'|'connected'|'error';error:string;preview:PresenceActivity;lastActivity:PresenceActivity|null}
 interface API {
+  presenceStatus():Promise<PresenceStatus>;setPresence(patch:Partial<PresenceOptions>):Promise<PresenceStatus>;presenceUpdate(meta:Record<string,unknown>):Promise<PresenceStatus>;onPresence(fn:(state:PresenceStatus)=>void):()=>void;
   installCatalog():Promise<InstallLanguage[]>;installStatus():Promise<InstallJob>;installLanguages(ids:string[]):Promise<boolean>;openLanguageSite(id:string):Promise<void>;onInstall(fn:(job:InstallJob)=>void):()=>void;
   privacyStatus():Promise<PrivacyStatus>;setPrivacy(mode:PrivacyStatus['mode']):Promise<PrivacyStatus>;onPrivacy(fn:(status:PrivacyStatus)=>void):()=>void;
   copyText(text: string): Promise<void>;
