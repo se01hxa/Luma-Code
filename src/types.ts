@@ -19,7 +19,13 @@ export interface InstallJob {running:boolean;finishedAt?:string|null;logs:string
 export interface PresenceOptions { enabled:boolean;applicationId:string;showProject:boolean;showFile:boolean;showPosition:boolean;showMouse:boolean;hideSensitive:boolean;pipe:string }
 export interface PresenceActivity {details:string;state:string;assets:{large_image:string;large_text:string}}
 export interface PresenceStatus {options:PresenceOptions;status:'disabled'|'connecting'|'waiting'|'connected'|'error';error:string;preview:PresenceActivity;lastActivity:PresenceActivity|null}
+export type AIProvider = 'codex'|'claude'|'antigravity';
+export interface AIMessage{id:string;role:'user'|'assistant';text:string}
+export interface AISession{id:string;provider:AIProvider;title:string;messages:AIMessage[];status:string;model:string;workspace:string}
+export interface AIDraft{id:string;path:string;before:string;after:string;summary:string;status:string}
+export interface AIState{providers:{id:AIProvider;name:string;available:boolean;version:string;path:string;site:string;error?:string}[];sessions:AISession[];active:{sessionId:string;provider:AIProvider;phase:string}|null;approvals:{id:string;command:string;reason:string;sessionId:string}[];drafts:AIDraft[];mcp:{running:boolean;tools:number};log:{tool:string;at:number}[];options:{paths?:Partial<Record<AIProvider,string>>}}
 interface API {
+  aiSelect(id:string):Promise<AIState>;aiStatus():Promise<AIState>;aiRefresh():Promise<AIState>;aiContext(value:Record<string,unknown>):Promise<void>;aiAsk(value:{provider:AIProvider;prompt:string;sessionId?:string;model?:string;mode:string;attach:string}):Promise<AIState>;aiCancel():Promise<AIState>;aiApproval(id:string,allow:boolean):Promise<AIState>;aiOptions(value:{provider:AIProvider;path:string}):Promise<AIState>;aiCodexInfo():Promise<{loggedIn:boolean;requiresAuth:boolean;models:{id:string;name:string;isDefault:boolean}[]}>;aiConfig(id:AIProvider):Promise<string>;aiApply(id:string):Promise<FileData&{path:string}>;aiReject(id:string):Promise<AIState>;aiBridge(enabled:boolean):Promise<AIState>;aiPick(id:AIProvider):Promise<AIState>;aiSite(id:AIProvider):Promise<void>;aiLogin():Promise<boolean>;onAI(fn:(state:AIState)=>void):()=>void;onAIOpen(fn:(value:{path:string;line:number})=>void):()=>void;onAILogin(fn:(value:{success:boolean;error:string})=>void):()=>void;
   presenceStatus():Promise<PresenceStatus>;setPresence(patch:Partial<PresenceOptions>):Promise<PresenceStatus>;presenceUpdate(meta:Record<string,unknown>):Promise<PresenceStatus>;onPresence(fn:(state:PresenceStatus)=>void):()=>void;
   installCatalog():Promise<InstallLanguage[]>;installStatus():Promise<InstallJob>;installLanguages(ids:string[]):Promise<boolean>;openLanguageSite(id:string):Promise<void>;onInstall(fn:(job:InstallJob)=>void):()=>void;
   privacyStatus():Promise<PrivacyStatus>;setPrivacy(mode:PrivacyStatus['mode']):Promise<PrivacyStatus>;onPrivacy(fn:(status:PrivacyStatus)=>void):()=>void;
@@ -33,7 +39,7 @@ interface API {
   search(query: string, sensitive?: boolean): Promise<{ matches: Match[]; truncated: boolean }>;
   settings(patch: Partial<Config>): Promise<Config>; chooseImage(): Promise<string | null>; chooseKey(): Promise<string | null>;
   connect(profile: Profile): Promise<Workspace>; disconnect(): Promise<boolean>; runtimes(refresh?: boolean): Promise<Runtime>; chooseRuntime(directory?: boolean): Promise<string | null>; saveRuntime(input: RuntimeInput): Promise<Runtime>; resetRuntime(id: string): Promise<Runtime>;
-  terminalCreate(options?: { runPath?: string; cols?: number; rows?: number }): Promise<TerminalInfo>;
+  terminalCreate(options?: { aiProvider?:AIProvider; runPath?: string; cols?: number; rows?: number }): Promise<TerminalInfo>;
   terminalWrite(id: string, data: string): Promise<void>; terminalResize(id: string, cols: number, rows: number): Promise<void>; terminalClose(id: string): Promise<void>;
   python(method: string, params: unknown): Promise<any>; pythonNotify(method: string, params: unknown): Promise<void>;
   window(action: string): Promise<void>; confirm(message: string, detail?: string, buttons?: string[]): Promise<number>;

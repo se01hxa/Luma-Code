@@ -10,7 +10,8 @@ const rpc = require('vscode-jsonrpc/node');
 const core = require('./core.cjs');
 const { createPrivacy } = require('./privacy.cjs');
 const presenceTools = require('./discord-presence.cjs');
-let privacy, installer, presence;
+const {createAI}=require('./ai-controller.cjs');
+let privacy, installer, presence, ai;
 const installTools=require('./installers.cjs');
 const runtimeTools = require('./runtimes.cjs');
 const { buildPlan, powershellCommand } = require('./runners.cjs');
@@ -110,6 +111,7 @@ function stopPython() {
   pythonStarting = undefined;
 }
 async function clearWorkspace() {
+  await ai?.cancel();ai?.context({});ai?.tools.clear();
   if (watcher) { await watcher.close(); watcher = undefined; }
   stopPython();
   for (const id of [...terminals.keys()]) closeTerminal(id);
@@ -178,8 +180,10 @@ function closeTerminal(id) {
   try { term.remote ? term.stream.end() : term.process.kill(); } catch {}
   // onExit removes compiler output after the process tree has stopped.
 }
-async function createTerminal({ runPath, cols = 100, rows = 24 } = {}) {
+async function createTerminal({ runPath, aiProvider, cols = 100, rows = 24 } = {}) {
+  if(aiProvider&&!['claude','antigravity'].includes(aiProvider))throw Error('지원하지 않는 로그인입니다.');
   const w = ws();
+  if(aiProvider&&w.remote)throw Error('AI 로그인은 로컬 작업 공간에서 진행해주세요.');
   if (runPath) await resolvePath(w, runPath);
   const id = require('node:crypto').randomUUID();
   if(runPath && privacy){
@@ -188,7 +192,7 @@ async function createTerminal({ runPath, cols = 100, rows = 24 } = {}) {
     for(const file of envs)try{await readFile(file,w);}catch{}
   }
   const redactor=privacy.stream(), output=data=>{const text=redactor.push(data);if(text)emit('terminal:data',{id,data:text});}, flush=()=>{const text=redactor.push('',true);if(text)emit('terminal:data',{id,data:text});};
-  const name = runPath ? path.basename(runPath) : w.remote ? 'SSH' : 'PowerShell';
+  const name = aiProvider ? aiProvider+' 로그인' : runPath ? path.basename(runPath) : w.remote ? 'SSH' : 'PowerShell';
   if (w.remote) {
     const command = runPath && runSpec(runPath, w);
     const stream = await new Promise((resolve, reject) => {
@@ -205,7 +209,7 @@ async function createTerminal({ runPath, cols = 100, rows = 24 } = {}) {
     const runtime = await localRuntime();
     if (workspace !== w) throw Error('작업 공간이 변경되었습니다. 현재 파일에서 다시 실행해주세요.');
     const shellExe = runtime.powershell && !/\.(?:bat|cmd|ps1)$/i.test(runtime.powershell) ? runtime.powershell : runtimeTools.systemPS();
-    const spec = runPath && await buildPlan(path.join(w.root, runPath), runtime, config.runtimes || {}, path.join(app.getPath('temp'), 'luma-code-runs')); 
+    const spec = aiProvider ? {steps:[await ai.loginSpec(aiProvider)]} : runPath && await buildPlan(path.join(w.root, runPath), runtime, config.runtimes || {}, path.join(app.getPath('temp'), 'luma-code-runs')); 
     if (workspace !== w) { if (spec?.cleanup) await fs.rm(spec.cleanup, { recursive: true, force: true }); throw Error('작업 공간이 변경되었습니다. 현재 파일에서 다시 실행해주세요.'); }
     const args = ['-NoLogo', '-NoProfile', ...(spec ? ['-Command', powershellCommand(spec.steps)] : [])];
     let processPty;
@@ -286,6 +290,13 @@ async function connectSSH(profile) {
 }
 
 function registerHandlers() {
+  handle('ai:select',id=>ai.chooseSession(id));handle('ai:status',()=>ai.status());handle('ai:refresh',()=>ai.refresh());handle('ai:context',value=>ai.context(value));handle('ai:ask',value=>ai.ask(value));handle('ai:cancel',()=>ai.cancel());handle('ai:approval',(id,allow)=>ai.answerApproval(id,allow===true));
+  handle('ai:options',patch=>ai.updateOptions(patch));handle('ai:codex-info',()=>ai.codexInfo());handle('ai:config',id=>{if(!['codex','claude','antigravity'].includes(id))throw Error('지원하지 않는 AI입니다.');return ai.connectionConfig(id);});
+  handle('ai:apply',id=>ai.tools.apply(id));handle('ai:reject',id=>{ai.tools.reject(id);return ai.status();});
+  handle('ai:bridge',async enabled=>{if(enabled){await ai.start();return ai.status();}return ai.stopBridge();});
+  handle('ai:pick',async id=>{if(!['codex','claude','antigravity'].includes(id))throw Error('지원하지 않는 AI입니다.');const result=await dialog.showOpenDialog(win,{title:'AI CLI 실행 파일 선택',properties:['openFile'],filters:[{name:'AI CLI',extensions:['exe','cmd','js','cjs','mjs']}]});if(result.canceled)return ai.status();return ai.updateOptions({provider:id,path:result.filePaths[0]});});
+  handle('ai:site',id=>{const entry=require('./ai-providers.cjs').PROVIDERS[id];if(!entry)throw Error('지원하지 않는 AI입니다.');return shell.openExternal(entry.site);});
+  handle('ai:login',async()=>{const result=await ai.login();const url=new URL(result.url);if(url.protocol!=='https:'||!['auth.openai.com','chatgpt.com','auth0.openai.com'].includes(url.hostname))throw Error('공식 로그인 주소를 확인할 수 없습니다.');await shell.openExternal(result.url);return true;});
   handle('bootstrap', async () => ({ config, version: app.getVersion(), platform: process.platform, initialFolder: process.argv.includes('--workspace') ? process.argv[process.argv.indexOf('--workspace') + 1] : null }));
   handle('clipboard:write', text => { if (typeof text === 'string' && text.length < 100000) clipboard.writeText(text); });
   handle('workspace:choose', async () => { const r = await dialog.showOpenDialog(win, { properties: ['openDirectory'] }); return r.canceled ? null : r.filePaths[0]; });
@@ -433,6 +444,7 @@ function registerHandlers() {
 
 app.whenReady().then(async () => {
   app.setAppUserModelId('dev.luma.code');
+  if(process.argv.includes('--mcp-stdio')){const i=process.argv.indexOf('--bridge');if(i<0||!process.argv[i+1])throw Error('MCP 연결 파일이 필요합니다.');const server=await require('./mcp-bridge.cjs').runProxy(process.argv[i+1]);server.onclose=()=>app.quit();return;}
   if (process.env.LUMA_TEST_USERDATA) app.setPath('userData', process.env.LUMA_TEST_USERDATA);
   try { config = { ...config, ...JSON.parse(await fs.readFile(configPath(), 'utf8')) }; } catch {}
   const setupIndex=process.argv.indexOf('--setup-options');
@@ -465,6 +477,9 @@ app.whenReady().then(async () => {
   presence=presenceTools.createPresence({getOptions:()=>config.discord||presenceTools.DEFAULTS,onChange:state=>emit('presence:changed',state)});
   presence.configure();
   privacy = await createPrivacy(() => config.privacy || {mode:'always'}, emit);
+  const aiSecrets=await import('../shared/secrets.mjs');
+  ai=createAI({userData:app.getPath('userData'),launcher:{command:process.execPath,args:[path.join(__dirname,'mcp-stdio.cjs')],env:{ELECTRON_RUN_AS_NODE:'1'}},getWorkspace:()=>workspace,readFile,redact:(name,text)=>{privacy.observe(name,text);return privacy.redactAlways(aiSecrets.maskDocument(name,text).content);},emit,getOptions:()=>config.ai||{},saveOptions:async value=>{config.ai=value;await saveConfig();},onOpen:value=>emit('ai:open',value)});
+  void ai.init().catch(e=>emit('ai:startupError',{message:e.message}));
   Menu.setApplicationMenu(null);
   win = new BrowserWindow({ width: 1440, height: 940, minWidth: 980, minHeight: 650, backgroundColor: '#15171c', frame: false, show: false, title: 'Luma Code', icon: path.join(__dirname, '../assets/icon.png'), webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false } });
   registerHandlers();
@@ -476,5 +491,5 @@ app.whenReady().then(async () => {
   win.once('ready-to-show', () => win.show());
   if (process.argv.includes('--dev')) await win.loadURL('http://127.0.0.1:5173');
   else await win.loadFile(path.join(__dirname, '../dist/index.html'));
-}).catch(e => { dialog.showErrorBox('Luma Code 시작 실패', e.stack || e.message); app.quit(); });
-app.on('window-all-closed', () => { presence?.stop(); privacy?.stop(); clearWorkspace().finally(() => app.quit()); });
+}).catch(e => { if(process.argv.includes('--mcp-stdio')){process.stderr.write(e.message+'\n');app.exit(1);return;}dialog.showErrorBox('Luma Code 시작 실패', e.stack || e.message); app.quit(); });
+app.on('window-all-closed', () => { presence?.stop(); privacy?.stop(); clearWorkspace().then(()=>ai?.shutdown()).finally(() => app.quit()); });

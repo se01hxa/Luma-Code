@@ -118,7 +118,7 @@ async function main() {
     const bytes=Buffer.from([0xbe,0xc8,0xb3,0xe7]); await fs.writeFile(path.join(fixture,'legacy.txt'),bytes);
     const error=await page.evaluate(async()=>{try{await window.luma.readFile('legacy.txt');return '';}catch(e){return e.message;}}); assert(error.includes('UTF-8')); assert.deepEqual(await fs.readFile(path.join(fixture,'legacy.txt')),bytes);
   });
-  if(await page.getByTitle('패널 닫기').isVisible()) await page.getByTitle('패널 닫기').click(); await page.locator('.tree-row').filter({ hasText: 'main.ts' }).click(); await expect(page.locator('.editor-tab.active')).toContainText('main.ts'); await page.screenshot({ path: path.join(work, 'editor-final.png') });
+  if(await page.getByTitle('패널 닫기',{exact:true}).isVisible()) await page.getByTitle('패널 닫기',{exact:true}).click(); await page.locator('.tree-row').filter({ hasText: 'main.ts' }).click(); await expect(page.locator('.editor-tab.active')).toContainText('main.ts'); await page.screenshot({ path: path.join(work, 'editor-final.png') });
   await check('SSH connects over a real encrypted transport and reads remote files', async () => {
     await page.locator('.monaco-editor textarea').first().focus(); await page.keyboard.press('Control+End'); await page.keyboard.type('\n// DISCARDED_DRAFT'); await expect(page.locator('.editor-tab.active .dirty-dot')).toBeVisible();
     const remoteDir=path.join(work,'ssh-fixture'); await fs.mkdir(remoteDir,{recursive:true}); await fs.writeFile(path.join(remoteDir,'remote.js'),'console.log("remote workspace");\n');

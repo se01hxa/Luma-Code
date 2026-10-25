@@ -3,6 +3,7 @@ const invoke = name => (...args) => ipcRenderer.invoke(name, ...args);
 const on = name => callback => { const handler = (_event, value) => callback(value); ipcRenderer.on(name, handler); return () => ipcRenderer.removeListener(name, handler); };
 contextBridge.exposeInMainWorld('luma', {
   installCatalog: invoke('install:catalog'), installStatus: invoke('install:status'), installLanguages: invoke('install:start'), openLanguageSite: invoke('install:site'), onInstall: on('install:changed'),
+  aiSelect:invoke('ai:select'),aiStatus:invoke('ai:status'),aiRefresh:invoke('ai:refresh'),aiContext:invoke('ai:context'),aiAsk:invoke('ai:ask'),aiCancel:invoke('ai:cancel'),aiApproval:invoke('ai:approval'),aiOptions:invoke('ai:options'),aiCodexInfo:invoke('ai:codex-info'),aiConfig:invoke('ai:config'),aiApply:invoke('ai:apply'),aiReject:invoke('ai:reject'),aiBridge:invoke('ai:bridge'),aiPick:invoke('ai:pick'),aiSite:invoke('ai:site'),aiLogin:invoke('ai:login'),onAI:on('ai:changed'),onAIOpen:on('ai:open'),onAILogin:on('ai:login'),
   presenceStatus: invoke('presence:status'), setPresence: invoke('presence:set'), presenceUpdate: invoke('presence:update'), onPresence: on('presence:changed'),
   privacyStatus: invoke('privacy:status'), setPrivacy: invoke('privacy:set'), onPrivacy: on('privacy:changed'),
   bootstrap: invoke('bootstrap'), chooseFolder: invoke('workspace:choose'), openFolder: invoke('workspace:open'), refresh: invoke('workspace:refresh'),
