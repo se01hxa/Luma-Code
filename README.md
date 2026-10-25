@@ -1,19 +1,21 @@
-# Luma Code 1.5
+<p align="center"><img src="assets/vexel-brand.png" alt="Vexel" width="880"></p>
+
+# Vexel 1.6
 
 VS Code와 비슷한 화면 구성의 Windows용 데스크톱 코드 편집기입니다. 인터넷 연결 없이 로컬 파일을 편집할 수 있습니다.
 
 ## 설치
 
-[Windows 설치 파일 다운로드](https://github.com/se01hxa/Luma-Code/releases/latest/download/LumaCode-Setup-1.5.0.exe) · [모든 다운로드](https://github.com/se01hxa/Luma-Code/releases/latest)
+[Windows 설치 파일 다운로드](https://github.com/se01hxa/Vexel/releases/latest/download/Vexel-Setup-1.6.0.exe) · [모든 다운로드](https://github.com/se01hxa/Vexel/releases/latest)
 
 
-**LumaCode-Setup-1.5.0.exe**를 실행하면 설치 폴더, 바탕화면·시작 메뉴 바로가기, 소리, 코드 애니메이션, 토큰 보호와 선택 언어 설치를 설정할 수 있습니다. 언어 목록은 여러 항목을 클릭해 선택하며 기본값은 편집기만 설치입니다. 선택한 언어가 있으면 배포처와 WinGet 설치 약관 동의가 필요합니다. 일부 언어는 Windows 관리자 승인이 표시될 수 있습니다. 언어 하나의 설치가 실패해도 편집기는 설치되며, 앱의 **설정 → 언어 설치**에서 기록을 보고 다시 시도할 수 있습니다. 설치된 앱은 Windows의 설치된 앱에서 제거할 수 있습니다. 언어 실행기·SDK와 사용자 설정은 앱을 제거해도 보관합니다.
+**Vexel-Setup-1.6.0.exe**를 실행하면 설치 폴더, 바탕화면·시작 메뉴 바로가기, 소리, 코드 애니메이션, 토큰 보호와 선택 언어 설치를 설정할 수 있습니다. 언어 목록은 여러 항목을 클릭해 선택하며 기본값은 편집기만 설치입니다. 선택한 언어가 있으면 배포처와 WinGet 설치 약관 동의가 필요합니다. 일부 언어는 Windows 관리자 승인이 표시될 수 있습니다. 언어 하나의 설치가 실패해도 편집기는 설치되며, 앱의 **설정 → 언어 설치**에서 기록을 보고 다시 시도할 수 있습니다. 설치된 앱은 Windows의 설치된 앱에서 제거할 수 있습니다. 언어 실행기·SDK와 사용자 설정은 앱을 제거해도 보관합니다.
 
 압축판은 설치 과정 없이 실행할 때 사용할 수 있습니다.
 
 ## 실행
 
-Windows 배포 폴더 안의 **Luma Code.exe**를 실행하세요. 배포 폴더의 나머지 파일도 함께 유지해야 합니다. 압축판은 전체를 풀고 실행하세요. 앱 자체에는 Node.js 설치가 필요하지 않습니다.
+Windows 배포 폴더 안의 **Vexel.exe**를 실행하세요. 배포 폴더의 나머지 파일도 함께 유지해야 합니다. 압축판은 전체를 풀고 실행하세요. 앱 자체에는 Node.js 설치가 필요하지 않습니다.
 
 코드 실행에는 해당 언어의 실행기가 필요합니다. **설정 → 언어와 실행기**에서 PATH, SDK 환경 변수, 일반 설치 폴더, 패키지 관리자 경로를 자동으로 검사합니다. 새로 설치한 뒤에는 **다시 자동 확인**을 누르세요. 프로젝트의 `.venv` / `venv` Python도 감지합니다. `.ps1`은 설치된 PowerShell의 실행 정책을 따릅니다.
 
@@ -30,29 +32,29 @@ Windows 배포 폴더 안의 **Luma Code.exe**를 실행하세요. 배포 폴더
 - **파일 실행**: 현재 파일을 저장한 뒤 F5로 실행합니다. Python, JS/TS, PowerShell, Kotlin, Java 등 아래 실행기 목록의 확장자를 지원합니다. 로컬 TypeScript 실행기는 내장 tsx를 사용하며 별도 tsx 설치는 필요하지 않습니다. 터미널은 실제 ConPTY이므로 표준 입력과 Ctrl+C를 지원합니다.
 - **파일 관리**: 파일·폴더 만들기, 이름 변경, 로컬 파일 휴지통 이동. 변경된 탭과 편집 내용을 복구하고 외부 수정 시 저장 충돌을 감지합니다.
 
-## Luma AI · Codex / Claude / Antigravity + MCP
+## Vexel AI · Codex / Claude / Antigravity + MCP
 
 **Ctrl+Shift+L** 또는 왼쪽 반짝이 아이콘으로 AI 사이드바를 엽니다. 로컬 폴더를 열고 서비스를 고른 뒤 질문하세요. 현재 파일·선택 영역 첨부, 모델 지정, 스트리밍 답변, 대화 기록, 작업 중지와 수정안 비교를 지원합니다.
 
 - **GPT · Codex**: 공식 Codex CLI의 app-server 프로토콜을 사용합니다. 기존 로그인 계정을 재사용하며 연결 탭에서 브라우저 로그인과 모델 목록 확인을 지원합니다. CLI가 필요합니다.
-- **Claude**: 공식 Claude Code CLI의 stream-json 모드를 사용합니다. 연결 탭의 로그인 버튼으로 Luma 터미널에서 공식 로그인 절차를 진행합니다. Claude 구독 또는 해당 CLI에서 지원하는 계정이 필요합니다.
+- **Claude**: 공식 Claude Code CLI의 stream-json 모드를 사용합니다. 연결 탭의 로그인 버튼으로 Vexel 터미널에서 공식 로그인 절차를 진행합니다. Claude 구독 또는 해당 CLI에서 지원하는 계정이 필요합니다.
 - **Antigravity**: 공식 Antigravity CLI **agy**의 stream-json 모드로 연결합니다. IDE 실행 명령 antigravity나 Gemini CLI를 대신 실행하지 않습니다. CLI 설치 및 Google 로그인이 필요합니다. CLI가 없으면 설치 안내와 수동 실행 경로 지정을 사용하세요.
 
-Antigravity의 무인 실행에서 MCP를 사용하려면 `~/.gemini/antigravity-cli/settings.json`의 `permissions.allow` 배열에 `"mcp(luma_code/*)"`를 추가하세요. 기존 설정을 유지하고 Luma 도구만 허용하세요. 명시적인 deny/ask 정책이 있으면 allow보다 우선합니다. 앱은 전역 권한을 자동 변경하지 않습니다.
+Antigravity의 무인 실행에서 MCP를 사용하려면 `~/.gemini/antigravity-cli/settings.json`의 `permissions.allow` 배열에 `"mcp(luma_code/*)"`를 추가하세요. 기존 설정을 유지하고 Vexel 도구만 허용하세요. 명시적인 deny/ask 정책이 있으면 allow보다 우선합니다. 앱은 전역 권한을 자동 변경하지 않습니다.
 
-MCP 서버는 SDK 기반 stdio 프로토콜을 사용합니다. 앱 내장 런타임으로 실행하므로 외부 MCP 연결 자체에는 별도 Node.js가 필요하지 않습니다. 앱에서 실행한 에이전트에는 Luma MCP를 자동으로 연결합니다. 외부 Codex / Claude / Antigravity에는 **연결 · MCP → 설정 복사**로 생성한 TOML 또는 JSON을 해당 도구의 MCP 설정에 추가하세요. 복사한 설정에는 실행 파일과 연결 파일 경로만 포함되며 인증 토큰은 출력하지 않습니다. Luma Code를 열어두고, 앱 재설치 경로를 바꿨다면 MCP 설정을 다시 복사하세요.
+MCP 서버는 SDK 기반 stdio 프로토콜을 사용합니다. 앱 내장 런타임으로 실행하므로 외부 MCP 연결 자체에는 별도 Node.js가 필요하지 않습니다. 앱에서 실행한 에이전트에는 Vexel MCP를 자동으로 연결합니다. 외부 Codex / Claude / Antigravity에는 **연결 · MCP → 설정 복사**로 생성한 TOML 또는 JSON을 해당 도구의 MCP 설정에 추가하세요. 복사한 설정에는 실행 파일과 연결 파일 경로만 포함되며 인증 토큰은 출력하지 않습니다. Vexel를 열어두고, 앱 재설치 경로를 바꿨다면 MCP 설정을 다시 복사하세요.
 
 도구: luma_workspace, luma_active_editor, luma_list_files, luma_read_file, luma_search, luma_diagnostics, luma_propose_change, luma_open_file. 선택 영역과 미저장 버퍼도 읽을 수 있고 첨부/MCP 결과의 알려진 민감한 값은 가립니다. MCP는 열린 작업 공간 범위를 검사하고 디렉터리 이탈·외부 심볼릭 링크·생성 폴더 접근을 차단합니다. stdio 프록시와 편집기 사이에는 임시 인증을 사용하는 로컬 루프백 연결을 사용합니다.
 
-수정안은 즉시 파일을 덮어쓰지 않습니다. 변경 목록 → 차이 보기 → **수정안 적용**에서 반영합니다. 새 파일은 기존 폴더 안에 제안할 수 있습니다. 삭제와 새 폴더 생성은 이 버전의 MCP 도구에 포함하지 않습니다. 민감한 값이 있는 파일의 수정, 미저장 파일 덮어쓰기, 오래된 기준 내용의 덮어쓰기를 거부합니다. 질문 모드에서는 수정안 생성을 막습니다. 기본 제공 에이전트의 직접 쓰기를 제한하고 MCP 수정안 사용을 지시하지만 각 CLI의 자체 도구와 추가 명령 허용은 해당 CLI 권한 정책을 따릅니다. Codex의 추가 명령 요청은 사이드바에서 확인 후 한 번만 허용하거나 거절할 수 있습니다. Claude는 Luma MCP 도구 중심으로 실행하고 Antigravity는 plan 모드에서 실행합니다.
+수정안은 즉시 파일을 덮어쓰지 않습니다. 변경 목록 → 차이 보기 → **수정안 적용**에서 반영합니다. 새 파일은 기존 폴더 안에 제안할 수 있습니다. 삭제와 새 폴더 생성은 이 버전의 MCP 도구에 포함하지 않습니다. 민감한 값이 있는 파일의 수정, 미저장 파일 덮어쓰기, 오래된 기준 내용의 덮어쓰기를 거부합니다. 질문 모드에서는 수정안 생성을 막습니다. 기본 제공 에이전트의 직접 쓰기를 제한하고 MCP 수정안 사용을 지시하지만 각 CLI의 자체 도구와 추가 명령 허용은 해당 CLI 권한 정책을 따릅니다. Codex의 추가 명령 요청은 사이드바에서 확인 후 한 번만 허용하거나 거절할 수 있습니다. Claude는 Vexel MCP 도구 중심으로 실행하고 Antigravity는 plan 모드에서 실행합니다.
 
-AI 에이전트 대화는 로컬 작업 공간용입니다. SSH 작업 공간은 MCP 읽기·탐색 연결을 사용할 수 있으며 AI 수정안 적용은 지원하지 않습니다. 최근 대화 30개를 앱 사용자 데이터에 저장하고, 파일 첨부는 최대 512 KB, MCP 목록/검색과 대기 수정안 수에 제한을 둡니다. 서비스 이용 요금·사용 한도는 각 계정에 따릅니다. Luma가 VS Code의 공식 확장 패키지를 그대로 실행하는 방식은 아닙니다.
+AI 에이전트 대화는 로컬 작업 공간용입니다. SSH 작업 공간은 MCP 읽기·탐색 연결을 사용할 수 있으며 AI 수정안 적용은 지원하지 않습니다. 최근 대화 30개를 앱 사용자 데이터에 저장하고, 파일 첨부는 최대 512 KB, MCP 목록/검색과 대기 수정안 수에 제한을 둡니다. 서비스 이용 요금·사용 한도는 각 계정에 따릅니다. Vexel이 VS Code의 공식 확장 패키지를 그대로 실행하는 방식은 아닙니다.
 
 공식 프로토콜: [Codex app-server](https://learn.chatgpt.com/docs/app-server), [Claude Code](https://code.claude.com/docs/en/headless), [Antigravity CLI](https://www.antigravity.google/docs/cli/headless/).
 
 ## Discord 활동 확장
 
-설정 → Discord 활동에서 켜면 Application ID 1562471621191540817로 연결합니다. 별도 토큰이나 VS Code 확장 설치가 필요하지 않습니다. Luma Code 로고, 프로젝트 폴더 이름, 파일 이름, 커서 줄·열, 마지막 수정 줄, 마우스가 가리키는 코드 줄·열을 표시합니다. 파일·프로젝트 이름만 보내며 전체 경로, 코드 본문, 토큰과 SSH 호스트는 보내지 않습니다. 각 항목을 끄거나 활동 자체를 끌 수 있습니다. 기본값은 꺼짐입니다.
+설정 → Discord 활동에서 켜면 Application ID 1562471621191540817로 연결합니다. 별도 토큰이나 VS Code 확장 설치가 필요하지 않습니다. Vexel 로고, 프로젝트 폴더 이름, 파일 이름, 커서 줄·열, 마지막 수정 줄, 마우스가 가리키는 코드 줄·열을 표시합니다. 파일·프로젝트 이름만 보내며 전체 경로, 코드 본문, 토큰과 SSH 호스트는 보내지 않습니다. 각 항목을 끄거나 활동 자체를 끌 수 있습니다. 기본값은 꺼짐입니다.
 
 .env 및 비밀 값이 감지된 파일은 기본적으로 파일·프로젝트·위치를 숨깁니다. 마우스가 편집기 밖에 있으면 편집기 밖으로 표시하며 화면 좌표는 추적하지 않습니다. Discord 제한에 맞춰 약 15초마다 최신 상태를 반영하고 5분간 위치 변화나 편집이 없으면 활동을 지웁니다. 다시 작업하면 복원됩니다. Discord 실행 후 자동 재연결하며 Canary·Vesktop 등 여러 클라이언트가 켜져 있으면 RPC 연결 번호를 선택할 수 있습니다. Discord의 활동 공유 옵션 및 Vesktop의 RPC 플러그인이 켜져 있어야 합니다. 활동 제목은 Discord Developer Portal의 앱 이름을 사용합니다.
 
@@ -137,3 +139,9 @@ npm run package
 언어 실행기 통합 검사에서 실제 Kotlin/Java를 확인하려면 LUMA_TEST_KOTLIN_ROOT와 LUMA_TEST_JAVA_ROOT에 테스트용 SDK 폴더를 지정하세요. 앱 통합 검사에는 Node.js, Python, PowerShell이 필요합니다. 특정 Python을 사용하려면 `LUMA_TEST_PYTHON` 환경 변수에 Python 실행 파일의 전체 경로를 지정하세요. 배포본을 검사하려면 `LUMA_TEST_EXECUTABLE`에 배포 실행 파일의 전체 경로를 지정할 수 있습니다. 앱 코드는 특정 사용자 경로에 의존하지 않습니다. 실행, 언어 서버, 파일 저장, 구조도, 테마, 복구, SSH/SFTP는 통합 검사 대상입니다. SSH 검사는 로컬 임시 SSH 서버를 사용합니다.
 
 Electron, Monaco Editor, Pyright, React, xterm.js, ssh2, node-pty, React Flow 등 오픈소스 구성 요소를 사용합니다. 배포본에는 라이선스 고지를 함께 제공합니다.
+
+## Vexel 로고와 이름 변경
+
+Velora의 은색 리본 감각을 참고해 Vexel 전용 각진 V와 코드 꺾쇠를 벡터로 제작했습니다. 원본은 assets/vexel-mark.svg, Windows 아이콘은 assets/icon.ico입니다.
+
+기존 설정·SSH·AI 대화를 이어 쓰도록 사용자 데이터 폴더 luma-code, 앱 ID, luma_* MCP 도구와 서버 식별자는 호환 목적으로 유지합니다. 이름 변경 후 MCP 연결 화면에서 새 실행 경로를 복사하세요. Discord Application ID의 포털 이름은 계정에서 Vexel로 변경해야 활동 제목에도 새 이름이 표시됩니다.

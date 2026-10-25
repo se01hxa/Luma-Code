@@ -1,7 +1,7 @@
 const net = require('node:net');
 const { randomUUID } = require('node:crypto');
 const DEFAULTS = { enabled: false, applicationId: '1562471621191540817', showProject: true, showFile: true, showPosition: true, showMouse: true, hideSensitive: true, pipe: 'auto' };
-const LOGO = 'https://raw.githubusercontent.com/se01hxa/Luma-Code/main/assets/icon.png';
+const LOGO = 'https://raw.githubusercontent.com/se01hxa/Vexel/main/assets/icon.png';
 const text = (value, max = 128) => [...String(value || '').replace(/[\x00-\x1f\x7f]/g, ' ').trim()].slice(0, max).join('');
 const base = value => text(String(value || '').replace(/\\/g, '/').split('/').pop());
 const number = value => Number.isSafeInteger(value) && value > 0 && value <= 10000000 ? value : 0;
@@ -15,12 +15,12 @@ function options(input = {}) {
 function activity(meta = {}, prefs = DEFAULTS, start = Math.floor(Date.now()/1000)) {
   const file = base(meta.file), hidden = prefs.hideSensitive && (meta.sensitive || /(^\.env(?:\.|$)|\.env$|\.pem$|\.key$)/i.test(file));
   const project = prefs.showProject && !hidden ? text(base(meta.project),32) : '';
-  const details = hidden ? '보호된 파일 작업 중' : prefs.showFile && file ? `${meta.editing ? '편집 중' : '살펴보는 중'} · ${file}` : 'Luma Code에서 작업 중';
+  const details = hidden ? '보호된 파일 작업 중' : prefs.showFile && file ? `${meta.editing ? '편집 중' : '살펴보는 중'} · ${file}` : 'Vexel에서 작업 중';
   const parts = project ? [project] : [];
   if (!hidden && file && prefs.showPosition && number(meta.line)) parts.push(`커서 ${number(meta.line)}:${number(meta.column)||1}`);
   if (!hidden && file && prefs.showPosition && number(meta.editLine)) parts.push(`수정 ${number(meta.editLine)}줄`);
   if (!hidden && file && prefs.showMouse) parts.push(number(meta.mouseLine) ? `마우스 ${number(meta.mouseLine)}:${number(meta.mouseColumn)||1}` : '마우스 편집기 밖');
-  return { type: 0, details: text(details), state: text(parts.join(' · ') || (hidden ? '파일 정보 숨김' : '프로젝트를 여는 중')), timestamps: { start }, assets: { large_image: LOGO, large_text: 'Luma Code' }, instance: false };
+  return { type: 0, details: text(details), state: text(parts.join(' · ') || (hidden ? '파일 정보 숨김' : '프로젝트를 여는 중')), timestamps: { start }, assets: { large_image: LOGO, large_text: 'Vexel' }, instance: false };
 }
 function frame(op, data) { const body=Buffer.from(JSON.stringify(data)), result=Buffer.alloc(body.length+8);result.writeUInt32LE(op,0);result.writeUInt32LE(body.length,4);body.copy(result,8);return result; }
 function createPresence({ getOptions, onChange = () => {}, connect = p => net.createConnection(p), pipePath = i => `\\\\.\\pipe\\discord-ipc-${i}`, interval = 15000, retry = 10000, idle = 300000 } = {}) {

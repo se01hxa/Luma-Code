@@ -4,7 +4,7 @@ import type { Theme } from './types';
 import { playSound } from './sounds';
 import { SOUND_NAMES, type SoundKind } from './sound-design';
 
-const EXAMPLE = '// 아이디어가 코드가 되는 순간.\nconst workspace = {\n  name: "Luma Code",\n  ready: true,\n};\n\nfunction welcome(name: string) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(welcome(workspace.name));';
+const EXAMPLE = '// 아이디어가 코드가 되는 순간.\nconst workspace = {\n  name: "Vexel",\n  ready: true,\n};\n\nfunction welcome(name: string) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(welcome(workspace.name));';
 export default function EffectsSettings({ theme, update }: { theme: Theme; update: (patch: Partial<Theme>) => void }) {
   const [offset, setOffset] = useState(EXAMPLE.length), [animating, setAnimating] = useState(false), frame = useRef(0);
   useEffect(() => () => cancelAnimationFrame(frame.current), []);

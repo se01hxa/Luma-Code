@@ -31,7 +31,7 @@ Function LumaOptionsCreate
  !insertmacro MUI_HEADER_TEXT "추가 설치 설정" "바로가기와 처음 사용할 환경을 선택하세요."
  nsDialogs::Create 1018
  Pop $LumaDialog
- ${NSD_CreateCheckbox} 0 5u 100% 16u "바탕화면에 Luma Code 추가"
+ ${NSD_CreateCheckbox} 0 5u 100% 16u "바탕화면에 Vexel 추가"
  Pop $LumaDesktop
  ${NSD_SetState} $LumaDesktop ${BST_CHECKED}
  ${NSD_CreateCheckbox} 0 27u 100% 16u "시작 메뉴에 추가"
@@ -218,14 +218,14 @@ FunctionEnd
 !macroend
 
 !macro customInstall
- StrCpy $launchLink "$INSTDIR\Luma Code.exe"
+ StrCpy $launchLink "$INSTDIR\Vexel.exe"
  ${If} $LumaVisited == 1
   ${If} $LumaDesktopState == ${BST_CHECKED}
-   CreateShortCut "$DESKTOP\Luma Code.lnk" "$INSTDIR\Luma Code.exe"
+   CreateShortCut "$DESKTOP\Vexel.lnk" "$INSTDIR\Vexel.exe"
    WriteRegDWORD HKCU "Software\LumaCode\InstallOptions" "$INSTDIR-Desktop" 1
   ${EndIf}
   ${If} $LumaMenuState == ${BST_CHECKED}
-   CreateShortCut "$SMPROGRAMS\Luma Code.lnk" "$INSTDIR\Luma Code.exe"
+   CreateShortCut "$SMPROGRAMS\Vexel.lnk" "$INSTDIR\Vexel.exe"
    WriteRegDWORD HKCU "Software\LumaCode\InstallOptions" "$INSTDIR-Menu" 1
   ${EndIf}
   StrCpy $1 "false"
@@ -245,7 +245,7 @@ FunctionEnd
   FileWrite $0 '{"privacy":{"mode":"$3"},"theme":{"soundEnabled":$1,"openAnimation":$2}}'
   FileClose $0
   DetailPrint "설정을 저장하고 선택한 언어를 설치·최신 버전으로 업데이트합니다..."
-  nsExec::ExecToLog '"$INSTDIR\Luma Code.exe" --setup-run --setup-options "$PLUGINSDIR\luma-setup.json" --setup-languages "$LumaLanguages"'
+  nsExec::ExecToLog '"$INSTDIR\Vexel.exe" --setup-run --setup-options "$PLUGINSDIR\luma-setup.json" --setup-languages "$LumaLanguages"'
   Pop $0
   ${If} $0 != 0
    MessageBox MB_OK "편집기는 설치됐지만 일부 언어 설치를 완료하지 못했습니다. 앱의 설정 → 언어 설치에서 기록을 확인하고 다시 시도해주세요."
@@ -255,12 +255,12 @@ FunctionEnd
 !macro customUnInstall
  ReadRegDWORD $0 HKCU "Software\LumaCode\InstallOptions" "$INSTDIR-Desktop"
  ${If} $0 == 1
-  Delete "$DESKTOP\Luma Code.lnk"
+  Delete "$DESKTOP\Vexel.lnk"
   DeleteRegValue HKCU "Software\LumaCode\InstallOptions" "$INSTDIR-Desktop"
  ${EndIf}
  ReadRegDWORD $0 HKCU "Software\LumaCode\InstallOptions" "$INSTDIR-Menu"
  ${If} $0 == 1
-  Delete "$SMPROGRAMS\Luma Code.lnk"
+  Delete "$SMPROGRAMS\Vexel.lnk"
   DeleteRegValue HKCU "Software\LumaCode\InstallOptions" "$INSTDIR-Menu"
  ${EndIf}
 !macroend

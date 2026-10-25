@@ -1,9 +1,9 @@
 {
-  "name": "luma-code",
-  "version": "1.5.0",
+  "name": "vexel",
+  "version": "1.6.0",
   "private": true,
   "description": "A focused desktop code editor with a project map, custom themes and SSH workspaces.",
-  "author": "Luma Code",
+  "author": "Vexel",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron . --dev\"",
@@ -52,7 +52,7 @@
   },
   "build": {
     "appId": "dev.luma.code",
-    "productName": "Luma Code",
+    "productName": "Vexel",
     "asar": true,
     "asarUnpack": [
       "node_modules/**/*"
@@ -90,7 +90,7 @@
         "en_US"
       ],
       "language": "1042",
-      "artifactName": "LumaCode-Setup-${version}.${ext}"
+      "artifactName": "Vexel-Setup-${version}.${ext}"
     }
   },
   "type": "module"

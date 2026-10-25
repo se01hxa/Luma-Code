@@ -1,3 +1,4 @@
+import vexelMark from '../assets/vexel-mark.svg';
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronRight, FileCode2, FileJson2, FileText, Folder, FolderOpen, X, LoaderCircle, ImagePlus, Check, Upload, KeyRound, Server, ArrowUpRight } from 'lucide-react';
 import type { Entry, Theme, Tab, Profile, Config } from './types';
@@ -16,7 +17,7 @@ import { playSound } from './sounds';
 export function FileIcon({ path, size = 15 }: { path: string; size?: number }) {
   return <LanguageIcon file={path} size={size}/>;
 }
-export function Logo({ size = 25 }: { size?: number }) { return <svg width={size} height={size} viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M7 7h8v15h14v7H7V7Z" fill="currentColor"/><path d="m22 7 7 7-7 7V7Z" fill="currentColor" opacity=".5"/></svg>; }
+export function Logo({ size = 25 }: { size?: number }) { return <img src={vexelMark} width={size} height={size} alt="" aria-hidden="true"/>; }
 export function IconButton({ title, children, onClick, className = '', disabled = false }: { title: string; children: ReactNode; onClick?: () => void; className?: string; disabled?: boolean }) { return <button className={`icon-button ${className}`} title={title} aria-label={title} onClick={onClick} disabled={disabled}>{children}</button>; }
 export function Spinner({ label = '불러오는 중…' }: { label?: string }) { return <div className="loading"><LoaderCircle className="spin" size={18}/><span>{label}</span></div>; }
 export function Modal({ title, children, onClose, wide = false }: { title: string; children: ReactNode; onClose: () => void; wide?: boolean }) {

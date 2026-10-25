@@ -14,9 +14,9 @@ async function startBridge({descriptor,call}){
  return {descriptor,port:server.address().port,stop:async()=>{server.closeAllConnections();await new Promise(r=>server.close(r));try{const d=JSON.parse(await fs.readFile(descriptor,'utf8'));if(d.token===token)await fs.rm(descriptor,{force:true});}catch{}}};
 }
 async function runProxy(descriptor){
- const load=async()=>{const data=JSON.parse(await fs.readFile(descriptor,'utf8')),url=new URL(data.endpoint);if(url.hostname!=='127.0.0.1'||url.protocol!=='http:'||url.pathname!=='/tool'||url.username||url.password||!/^\d+$/.test(url.port)||!/^\w{64}$/.test(data.token))throw Error('유효한 Luma MCP 연결 파일이 아닙니다.');return data;};await load();
- const invoke=async(name,args)=>{const data=await load();const r=await fetch(data.endpoint,{method:'POST',headers:{Authorization:'Bearer '+data.token,'Content-Type':'application/json'},body:JSON.stringify({name,arguments:args}),signal:AbortSignal.timeout(35000)});const body=await r.json();if(!r.ok||body.error)throw Error(body.error||'Luma Code 연결 실패');return body.result;};
- const server=new Server({name:'luma-code',version:'1.5.0'},{capabilities:{tools:{},resources:{}}});
+ const load=async()=>{const data=JSON.parse(await fs.readFile(descriptor,'utf8')),url=new URL(data.endpoint);if(url.hostname!=='127.0.0.1'||url.protocol!=='http:'||url.pathname!=='/tool'||url.username||url.password||!/^\d+$/.test(url.port)||!/^\w{64}$/.test(data.token))throw Error('유효한 Vexel MCP 연결 파일이 아닙니다.');return data;};await load();
+ const invoke=async(name,args)=>{const data=await load();const r=await fetch(data.endpoint,{method:'POST',headers:{Authorization:'Bearer '+data.token,'Content-Type':'application/json'},body:JSON.stringify({name,arguments:args}),signal:AbortSignal.timeout(35000)});const body=await r.json();if(!r.ok||body.error)throw Error(body.error||'Vexel 연결 실패');return body.result;};
+ const server=new Server({name:'luma-code',version:'1.6.0'},{capabilities:{tools:{},resources:{}}});
  server.setRequestHandler(ListToolsRequestSchema,async()=>({tools:TOOL_DEFS}));
  server.setRequestHandler(CallToolRequestSchema,async req=>{try{return {content:[{type:'text',text:JSON.stringify(await invoke(req.params.name,req.params.arguments||{}))}]};}catch(e){return {isError:true,content:[{type:'text',text:e.message}]};}});
  server.setRequestHandler(ListResourcesRequestSchema,async()=>({resources:[{uri:'luma://editor/active',name:'Luma active editor',mimeType:'application/json'}]}));

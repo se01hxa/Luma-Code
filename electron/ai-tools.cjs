@@ -3,19 +3,19 @@ const core=require('./core.cjs');
 const hash=s=>crypto.createHash('sha256').update(s).digest('hex');
 const LIMIT=512*1024;
 const TOOL_DEFS=[
- ['luma_workspace','Read the current Luma Code workspace and available editor tools.',{}],
+ ['luma_workspace','Read the current Vexel workspace and available editor tools.',{}],
  ['luma_active_editor','Read active file, unsaved text, selection and cursor. Secrets are masked.',{}],
  ['luma_list_files','List workspace files with optional name filter and pagination.',{query:{type:'string'},offset:{type:'integer',minimum:0}}],
  ['luma_read_file','Read UTF-8 text and baseHash for a workspace-relative file. Secrets are masked.',{path:{type:'string'}}],
  ['luma_search','Literal text search in workspace source files.',{query:{type:'string',minLength:1,maxLength:200}}],
  ['luma_diagnostics','Read the editor diagnostics.',{}],
- ['luma_propose_change','Propose complete replacement content for ONE file. Call luma_read_file first and supply its baseHash. This creates a review draft; it DOES NOT write the file. The user applies the diff in Luma Code.',{path:{type:'string'},content:{type:'string',maxLength:LIMIT},baseHash:{type:'string'},summary:{type:'string',maxLength:300}}],
- ['luma_open_file','Open a workspace file and reveal a line in Luma Code.',{path:{type:'string'},line:{type:'integer',minimum:1}}]
+ ['luma_propose_change','Propose complete replacement content for ONE file. Call luma_read_file first and supply its baseHash. This creates a review draft; it DOES NOT write the file. The user applies the diff in Vexel.',{path:{type:'string'},content:{type:'string',maxLength:LIMIT},baseHash:{type:'string'},summary:{type:'string',maxLength:300}}],
+ ['luma_open_file','Open a workspace file and reveal a line in Vexel.',{path:{type:'string'},line:{type:'integer',minimum:1}}]
 ].map(([name,description,properties])=>({name,description,inputSchema:{type:'object',properties,required:name==='luma_propose_change'?['path','content','baseHash']:['luma_read_file','luma_open_file'].includes(name)?['path']:name==='luma_search'?['query']:[],additionalProperties:false},annotations:{readOnlyHint:name!=='luma_open_file'&&name!=='luma_propose_change',destructiveHint:false,openWorldHint:false}}));
 function createTools({getWorkspace,getEditor,readFile,redact,onOpen,onChange,canPropose=()=>true}){
  let drafts=[],log=[],lock=Promise.resolve();
  const mask=(name,text)=>redact?redact(name,text):text;
- const current=()=>{const w=getWorkspace();if(!w)throw Error('Luma Code에서 작업 폴더를 열어주세요.');return w;};
+ const current=()=>{const w=getWorkspace();if(!w)throw Error('Vexel에서 작업 폴더를 열어주세요.');return w;};
  function valid(w,p){if(typeof p!=='string'||!p||p.length>2048||p.includes('\0')||/^[\\/]|^[A-Za-z]:|(^|[\\/])\.\.([\\/]|$)/.test(p)||p.split(/[\\/]/).some(x=>core.IGNORED.has(x)))throw Error('작업 폴더 안의 일반 파일 경로만 사용할 수 있습니다.');if(w.filesOnly&&!w.files.has(p))throw Error('파일 모드에서는 열린 파일에만 접근할 수 있습니다.');return p;}
  async function read(p){const w=current();valid(w,p);let d;try{d={...await readFile(p,w),exists:true};}catch(e){if(e.code!=='ENOENT'||w.remote)throw e;await core.safePath(w.root,p,true);d={content:'',exists:false};}const editor=getEditor();const buffer=editor.root===w.root?editor.buffers?.find(b=>b.path===p):null;const raw=buffer?.content??d.content;const content=mask(p,raw);return {path:p,content:content.slice(0,LIMIT),baseHash:content!==raw?'protected':hash(raw),exists:d.exists,protected:content!==raw,truncated:content.length>LIMIT,dirty:!!buffer?.dirty};}
  async function call(name,args={}){
@@ -32,7 +32,7 @@ function createTools({getWorkspace,getEditor,readFile,redact,onOpen,onChange,can
    if(!canPropose())throw Error('질문 모드에서는 수정안을 만들 수 없습니다. 수정 제안 모드로 전환해주세요.');
    valid(w,args.path);if(typeof args.content!=='string'||Buffer.byteLength(args.content)>LIMIT||args.content.includes('\0'))throw Error('수정안은 512 KB 이하의 텍스트여야 합니다.');
    const original=await read(args.path);if(original.protected||mask(args.path,args.content)!==args.content)throw Error('민감한 값이 있는 파일은 AI 수정안에서 제외됩니다.');if(original.truncated)throw Error('큰 파일은 AI 수정안에서 제외됩니다.');if(args.baseHash!==original.baseHash)throw Error('파일이 변경되었습니다. 다시 읽고 수정안을 만들어주세요.');if(getWorkspace()?.root!==root)throw Error('작업 공간이 바뀌었습니다.');
-   drafts=drafts.filter(d=>d.root===root&&d.path!==args.path);if(drafts.length>=12)throw Error('대기 중인 수정안을 먼저 검토해주세요.');const draft={id:crypto.randomUUID(),root,path:args.path,before:original.content,after:args.content,baseHash:original.baseHash,existed:original.exists,summary:mask('ai-summary.txt',String(args.summary||'AI 수정 제안')).slice(0,300),status:'pending'};drafts.push(draft);onChange?.();return {draftId:draft.id,status:'pending_user_review',message:'Luma Code에서 변경 내용을 확인한 뒤 사용자가 적용합니다.'};
+   drafts=drafts.filter(d=>d.root===root&&d.path!==args.path);if(drafts.length>=12)throw Error('대기 중인 수정안을 먼저 검토해주세요.');const draft={id:crypto.randomUUID(),root,path:args.path,before:original.content,after:args.content,baseHash:original.baseHash,existed:original.exists,summary:mask('ai-summary.txt',String(args.summary||'AI 수정 제안')).slice(0,300),status:'pending'};drafts.push(draft);onChange?.();return {draftId:draft.id,status:'pending_user_review',message:'Vexel에서 변경 내용을 확인한 뒤 사용자가 적용합니다.'};
   }
   throw Error('지원하지 않는 도구입니다.');
  }

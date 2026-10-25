@@ -445,7 +445,8 @@ function registerHandlers() {
 app.whenReady().then(async () => {
   app.setAppUserModelId('dev.luma.code');
   if(process.argv.includes('--mcp-stdio')){const i=process.argv.indexOf('--bridge');if(i<0||!process.argv[i+1])throw Error('MCP 연결 파일이 필요합니다.');const server=await require('./mcp-bridge.cjs').runProxy(process.argv[i+1]);server.onclose=()=>app.quit();return;}
-  if (process.env.LUMA_TEST_USERDATA) app.setPath('userData', process.env.LUMA_TEST_USERDATA);
+  app.setPath('userData', process.env.LUMA_TEST_USERDATA || path.join(app.getPath('appData'), 'luma-code'));
+  await fs.mkdir(app.getPath('userData'), {recursive:true});
   try { config = { ...config, ...JSON.parse(await fs.readFile(configPath(), 'utf8')) }; } catch {}
   const setupIndex=process.argv.indexOf('--setup-options');
   if(process.argv.includes('--setup-run')&&setupIndex>=0){
@@ -481,7 +482,7 @@ app.whenReady().then(async () => {
   ai=createAI({userData:app.getPath('userData'),launcher:{command:process.execPath,args:[path.join(__dirname,'mcp-stdio.cjs')],env:{ELECTRON_RUN_AS_NODE:'1'}},getWorkspace:()=>workspace,readFile,redact:(name,text)=>{privacy.observe(name,text);return privacy.redactAlways(aiSecrets.maskDocument(name,text).content);},emit,getOptions:()=>config.ai||{},saveOptions:async value=>{config.ai=value;await saveConfig();},onOpen:value=>emit('ai:open',value)});
   void ai.init().catch(e=>emit('ai:startupError',{message:e.message}));
   Menu.setApplicationMenu(null);
-  win = new BrowserWindow({ width: 1440, height: 940, minWidth: 980, minHeight: 650, backgroundColor: '#15171c', frame: false, show: false, title: 'Luma Code', icon: path.join(__dirname, '../assets/icon.png'), webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false } });
+  win = new BrowserWindow({ width: 1440, height: 940, minWidth: 980, minHeight: 650, backgroundColor: '#15171c', frame: false, show: false, title: 'Vexel', icon: path.join(__dirname, '../assets/icon.png'), webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, spellcheck: false } });
   registerHandlers();
   void privacy.start();
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
@@ -491,5 +492,5 @@ app.whenReady().then(async () => {
   win.once('ready-to-show', () => win.show());
   if (process.argv.includes('--dev')) await win.loadURL('http://127.0.0.1:5173');
   else await win.loadFile(path.join(__dirname, '../dist/index.html'));
-}).catch(e => { if(process.argv.includes('--mcp-stdio')){process.stderr.write(e.message+'\n');app.exit(1);return;}dialog.showErrorBox('Luma Code 시작 실패', e.stack || e.message); app.quit(); });
+}).catch(e => { if(process.argv.includes('--mcp-stdio')){process.stderr.write(e.message+'\n');app.exit(1);return;}dialog.showErrorBox('Vexel 시작 실패', e.stack || e.message); app.quit(); });
 app.on('window-all-closed', () => { presence?.stop(); privacy?.stop(); clearWorkspace().then(()=>ai?.shutdown()).finally(() => app.quit()); });

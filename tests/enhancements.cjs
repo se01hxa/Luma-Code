@@ -7,7 +7,7 @@ let app;const checks=[];
 async function check(name,run){await run();checks.push(name);console.log('PASS '+name);}
 async function main(){
   await fs.mkdir(fixture,{recursive:true});
-  const original='// A real file, never replaced by animation frames.\nexport interface Workspace {\n  name: string;\n  ready: boolean;\n}\n\nexport function welcome(name: string): string {\n  return `Hello, ${name}!`;\n}\n\nconst workspace: Workspace = {\n  name: "Luma Code",\n  ready: true,\n};\n\nconsole.log(welcome(workspace.name));\n';
+  const original='// A real file, never replaced by animation frames.\nexport interface Workspace {\n  name: string;\n  ready: boolean;\n}\n\nexport function welcome(name: string): string {\n  return `Hello, ${name}!`;\n}\n\nconst workspace: Workspace = {\n  name: "Vexel",\n  ready: true,\n};\n\nconsole.log(welcome(workspace.name));\n';
   for(const name of ['alpha.ts','beta.ts','gamma.ts','delta.ts'])await fs.writeFile(path.join(fixture,name),name==='gamma.ts'?'console.log("SINGLE_FILE_RUN_OK");\n':original);
   await fs.writeFile(path.join(fixture,'never-opened.txt'),'Not selected.');
   const env={...process.env,LUMA_TEST_USERDATA:path.join(work,'effects-userdata-'+Date.now())};delete env.ELECTRON_RUN_AS_NODE;
