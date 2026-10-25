@@ -3,7 +3,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const project = path.resolve(__dirname, '..'), work = path.resolve(project, '../../work'), fixture = path.join(work, "runtime fixture O'Brien & space");
-let app; const checks = [], env = { ...process.env, LUMA_TEST_USERDATA: path.join(work, 'runtime-userdata-' + Date.now()) };
+let app; const checks = [], env = { ...process.env, LUMA_SKIP_ONBOARDING:'1',LUMA_TEST_USERDATA: path.join(work, 'runtime-userdata-' + Date.now()) };
 async function check(name, run) { await run(); checks.push(name); console.log('PASS ' + name); }
 async function launch() {
   delete env.ELECTRON_RUN_AS_NODE;

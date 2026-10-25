@@ -297,7 +297,7 @@ function registerHandlers() {
   handle('ai:pick',async id=>{if(!['codex','claude','antigravity'].includes(id))throw Error('지원하지 않는 AI입니다.');const result=await dialog.showOpenDialog(win,{title:'AI CLI 실행 파일 선택',properties:['openFile'],filters:[{name:'AI CLI',extensions:['exe','cmd','js','cjs','mjs']}]});if(result.canceled)return ai.status();return ai.updateOptions({provider:id,path:result.filePaths[0]});});
   handle('ai:site',id=>{const entry=require('./ai-providers.cjs').PROVIDERS[id];if(!entry)throw Error('지원하지 않는 AI입니다.');return shell.openExternal(entry.site);});
   handle('ai:login',async()=>{const result=await ai.login();const url=new URL(result.url);if(url.protocol!=='https:'||!['auth.openai.com','chatgpt.com','auth0.openai.com'].includes(url.hostname))throw Error('공식 로그인 주소를 확인할 수 없습니다.');await shell.openExternal(result.url);return true;});
-  handle('bootstrap', async () => ({ config, version: app.getVersion(), platform: process.platform, initialFolder: process.argv.includes('--workspace') ? process.argv[process.argv.indexOf('--workspace') + 1] : null }));
+  handle('bootstrap', async () => ({ config, version: app.getVersion(), platform: process.platform, skipOnboarding:!!process.env.LUMA_TEST_USERDATA&&process.env.LUMA_SKIP_ONBOARDING==='1', initialFolder: process.argv.includes('--workspace') ? process.argv[process.argv.indexOf('--workspace') + 1] : null }));
   handle('clipboard:write', text => { if (typeof text === 'string' && text.length < 100000) clipboard.writeText(text); });
   handle('workspace:choose', async () => { const r = await dialog.showOpenDialog(win, { properties: ['openDirectory'] }); return r.canceled ? null : r.filePaths[0]; });
   handle('file:choose', async () => {
@@ -306,6 +306,26 @@ function registerHandlers() {
     const actual = await fs.realpath(r.filePaths[0]); pickedFiles.add(actual); return actual;
   });
   handle('file:open', openPickedFile);
+  handle('file:save-new', async (name,content) => {
+    if(typeof name!=='string'||!name.trim()||typeof content!=='string'||Buffer.byteLength(content)>2*1024*1024)throw Error('파일 이름과 2 MB 이하의 내용을 확인해주세요.');
+    const w=workspace;
+    if(w){
+      const full=w.remote?await resolvePath(w,name,true):await core.safePath(w.root,name,true);
+      if(w.remote)await callSftp(w.sftp,'writeFile',full,content,{encoding:'utf8',flag:'wx'});else await fs.writeFile(full,content,{encoding:'utf8',flag:'wx'});
+      if(workspace!==w)throw Error('저장 중 작업 공간이 바뀌었습니다. 파일은 이전 작업 폴더에 저장됐습니다.');
+      if(w.filesOnly){w.files.add(name);watcher?.add(full);}
+      return {workspace:await snapshot(),path:name,sameWorkspace:true};
+    }
+    if(/[\\/]/.test(name)||name==='.'||name==='..')throw Error('새 파일 이름에는 폴더 경로를 넣지 마세요.');
+    const result=await dialog.showSaveDialog(win,{title:'새 파일 저장 위치',defaultPath:name,filters:[{name:'선택한 언어 파일',extensions:[path.extname(name).slice(1)||'*']},{name:'모든 파일',extensions:['*']}]});
+    if(result.canceled||!result.filePath)return null;
+    if(path.extname(name)&&path.extname(result.filePath).toLowerCase()!==path.extname(name).toLowerCase())throw Error('선택한 언어의 확장자를 유지해주세요.');
+    const parent=await fs.realpath(path.dirname(result.filePath)),full=path.join(parent,path.basename(result.filePath));
+    if(workspace!==w)throw Error('작업 공간이 바뀌었습니다. 다시 저장해주세요.');
+    await fs.writeFile(full,content,{encoding:'utf8',flag:'wx'});
+    const actual=await fs.realpath(full);pickedFiles.add(actual);return openPickedFile(actual);
+  });
+
   handle('workspace:open', async folder => { runtimeManager.invalidate(); return openLocal(folder); });
   handle('workspace:refresh', snapshot);
   handle('file:read', readFile);
@@ -374,9 +394,11 @@ function registerHandlers() {
   handle('presence:status',()=>presence.status());
   handle('presence:set',async patch=>{config.discord=presenceTools.options({...presence.status().options,...patch});await saveConfig();return presence.configure(Object.hasOwn(patch,'applicationId'));});
   handle('presence:update',meta=>{if(!meta||typeof meta!=='object')throw Error('올바르지 않은 활동 정보입니다.');return presence.update({...meta,project:workspace?.filesOnly?path.basename(workspace.root):workspace?.name||'',file:typeof meta.file==='string'?meta.file:''});});
+  handle('privacy:sharing',async value=>{config.privacy={mode:'sharing'};const result=privacy.setSharing(value);await saveConfig();return result;});
   handle('privacy:status',()=>privacy.status());
-  handle('privacy:set',async mode=>{if(!['always','auto','off'].includes(mode))throw Error('올바른 보호 방식을 선택해주세요.');config.privacy={mode};await saveConfig();return privacy.update();});
+  handle('privacy:set',async mode=>{if(!['always','auto','off','sharing'].includes(mode))throw Error('올바른 보호 방식을 선택해주세요.');config.privacy={mode};await saveConfig();return privacy.update();});
   handle('settings:save', async patch => {
+    if (['completed','skipped'].includes(patch.onboarding)) config.onboarding=patch.onboarding;
     if (patch.theme) config.theme = { ...config.theme, ...patch.theme };
     if (patch.recent) config.recent = config.recent.filter(p => patch.recent.includes(p));
     await saveConfig(); return config;

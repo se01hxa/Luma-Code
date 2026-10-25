@@ -1,6 +1,6 @@
 {
   "name": "vexel",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "description": "A focused desktop code editor with a project map, custom themes and SSH workspaces.",
   "author": "Vexel",
@@ -16,7 +16,9 @@
     "test:runtimes": "node tests/runtimes-app.cjs",
     "test:privacy": "node tests/privacy-app.cjs",
     "test:discord": "node tests/discord-app.cjs",
-    "test:ai": "node tests/ai-app.cjs"
+    "test:ai": "node tests/ai-app.cjs",
+    "test:workflows": "node tests/workflows-app.cjs",
+    "test:recovery": "node tests/recovery-app.cjs"
   },
   "dependencies": {
     "@lydell/node-pty": "^1.1.0",

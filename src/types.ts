@@ -6,14 +6,14 @@ export interface SymbolInfo { name: string; kind: string; line: number }
 export interface GraphData { modules: { path: string; imports: string[]; symbols: SymbolInfo[] }[]; edges: { source: string; target: string }[]; truncated: boolean; total: number }
 export interface Theme { preset: string; accent: string; background: string; image: string; opacity: number; blur: number; fontSize: number; fontFamily: string; minimap: boolean; wordWrap: boolean; tabSize: number; autoSave: boolean; openAnimation: boolean; animationDuration: number; soundEnabled: boolean; soundVolume: number; clickSound: 'tock' | 'click' | 'soft'; typingSound: boolean }
 export interface Profile { host: string; port: number; username: string; folder: string; keyPath: string; password?: string; passphrase?: string }
-export interface Config { privacy?: {mode: PrivacyStatus['mode']}; theme: Theme; recent: string[]; recentFiles?: string[]; profiles: Profile[] }
-export interface Tab { path: string; name: string; dirty: boolean; mtime: number; bom: boolean; language: string }
+export interface Config { privacy?: {mode: PrivacyStatus['mode']}; theme: Theme; recent: string[]; recentFiles?: string[]; profiles: Profile[]; onboarding?:'completed'|'skipped' }
+export interface Tab { path: string; name: string; dirty: boolean; mtime: number; bom: boolean; language: string; untitled?:boolean;draftFolder?:string }
 export interface TerminalInfo { id: string; name: string; run: boolean; exited?: boolean; code?: number }
 export interface Match { path: string; line: number; column: number; text: string }
 export interface RuntimeItem { id: string; name: string; extensions: string[]; path: string; version: string; source: string; valid: boolean; ready: boolean; issue?: string; custom?: boolean }
 export interface RuntimeInput { id?: string; path: string; custom?: { id?: string; name: string; extensions: string; args: string; versionArgs: string } }
 export interface Runtime { items?: RuntimeItem[]; checkedAt?: string; python?: string | null; node?: string | null; powershell?: string | null; typescript?: string | null; remote?: boolean }
-export interface PrivacyStatus {mode:'always'|'auto'|'off';active:boolean;clients:string[];detecting:boolean;changed?:boolean}
+export interface PrivacyStatus {mode:'always'|'auto'|'off'|'sharing';sharing?:boolean;active:boolean;clients:string[];detecting:boolean;changed?:boolean}
 export interface InstallLanguage {id:string;name:string;installable:boolean;alias?:string;site:string;note?:string}
 export interface InstallJob {running:boolean;finishedAt?:string|null;logs:string[];items:{id:string;name:string;status:'queued'|'installing'|'done'|'error';error?:string;upToDate?:boolean}[]}
 export interface PresenceOptions { enabled:boolean;applicationId:string;showProject:boolean;showFile:boolean;showPosition:boolean;showMouse:boolean;hideSensitive:boolean;pipe:string }
@@ -28,9 +28,9 @@ interface API {
   aiSelect(id:string):Promise<AIState>;aiStatus():Promise<AIState>;aiRefresh():Promise<AIState>;aiContext(value:Record<string,unknown>):Promise<void>;aiAsk(value:{provider:AIProvider;prompt:string;sessionId?:string;model?:string;mode:string;attach:string}):Promise<AIState>;aiCancel():Promise<AIState>;aiApproval(id:string,allow:boolean):Promise<AIState>;aiOptions(value:{provider:AIProvider;path:string}):Promise<AIState>;aiCodexInfo():Promise<{loggedIn:boolean;requiresAuth:boolean;models:{id:string;name:string;isDefault:boolean}[]}>;aiConfig(id:AIProvider):Promise<string>;aiApply(id:string):Promise<FileData&{path:string}>;aiReject(id:string):Promise<AIState>;aiBridge(enabled:boolean):Promise<AIState>;aiPick(id:AIProvider):Promise<AIState>;aiSite(id:AIProvider):Promise<void>;aiLogin():Promise<boolean>;onAI(fn:(state:AIState)=>void):()=>void;onAIOpen(fn:(value:{path:string;line:number})=>void):()=>void;onAILogin(fn:(value:{success:boolean;error:string})=>void):()=>void;
   presenceStatus():Promise<PresenceStatus>;setPresence(patch:Partial<PresenceOptions>):Promise<PresenceStatus>;presenceUpdate(meta:Record<string,unknown>):Promise<PresenceStatus>;onPresence(fn:(state:PresenceStatus)=>void):()=>void;
   installCatalog():Promise<InstallLanguage[]>;installStatus():Promise<InstallJob>;installLanguages(ids:string[]):Promise<boolean>;openLanguageSite(id:string):Promise<void>;onInstall(fn:(job:InstallJob)=>void):()=>void;
-  privacyStatus():Promise<PrivacyStatus>;setPrivacy(mode:PrivacyStatus['mode']):Promise<PrivacyStatus>;onPrivacy(fn:(status:PrivacyStatus)=>void):()=>void;
-  copyText(text: string): Promise<void>;
-  bootstrap(): Promise<{ config: Config; version: string; platform: string; initialFolder: string | null }>;
+  setSharing(active:boolean):Promise<PrivacyStatus>;privacyStatus():Promise<PrivacyStatus>;setPrivacy(mode:PrivacyStatus['mode']):Promise<PrivacyStatus>;onPrivacy(fn:(status:PrivacyStatus)=>void):()=>void;
+  saveNewFile(name:string,content:string):Promise<{workspace:Workspace;path:string;sameWorkspace:boolean}|null>;copyText(text: string): Promise<void>;
+  bootstrap(): Promise<{ config: Config; version: string; platform: string; initialFolder: string | null;skipOnboarding?:boolean }>;
   chooseFolder(): Promise<string | null>; openFolder(path: string): Promise<Workspace>; refresh(): Promise<Workspace>;
   chooseFile(): Promise<string | null>; openPickedFile(path: string): Promise<{ workspace: Workspace; path: string; sameWorkspace: boolean }>;
   readFile(path: string): Promise<FileData>; writeFile(path: string, content: string, expected: number | null, bom: boolean): Promise<FileData>;

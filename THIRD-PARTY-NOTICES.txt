@@ -1,4 +1,4 @@
-# Third-party notices — Vexel 1.6.0
+# Third-party notices — Vexel 1.7.0
 
 Electron and Chromium notices are also provided as LICENSE.electron.txt and LICENSES.chromium.html in the application folder.
 

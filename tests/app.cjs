@@ -18,7 +18,7 @@ async function main() {
   await fs.writeFile(path.join(fixture, 'hello.py'), 'import json\n\nclass Project:\n    def greet(self, name: str) -> str:\n        return f"Hello, {name}"\n\nprint("LUMA_PY_OK")\n');
   await fs.writeFile(path.join(fixture, 'hello.ps1'), 'Write-Output "LUMA_PS_OK"\n');
   await fs.writeFile(path.join(fixture, 'README.md'), '# Luma workspace\n\nA real project, ready to explore.\n');
-  const env = { ...process.env, LUMA_TEST_USERDATA: path.join(work, 'test-userdata-' + Date.now()) };
+  const env = { ...process.env, LUMA_SKIP_ONBOARDING:'1',LUMA_TEST_USERDATA: path.join(work, 'test-userdata-' + Date.now()) };
   const pythonBin = process.env.LUMA_TEST_PYTHON ? path.dirname(process.env.LUMA_TEST_PYTHON) : '';
   const pathKey=Object.keys(env).find(k=>k.toLowerCase()==='path'); if (pythonBin) env[pathKey]=pythonBin + path.delimiter + env[pathKey];
   delete env.ELECTRON_RUN_AS_NODE;
@@ -97,7 +97,7 @@ async function main() {
     await page.keyboard.type("Write-Output 'LUMA_INTERRUPT_OK'"); await page.keyboard.press('Enter');
     await expect(page.locator('.terminal-host:visible .xterm-rows > div').filter({hasText:/^LUMA_INTERRUPT_OK\s*$/})).toBeVisible({timeout:15000});
   });
-  await check('file creation dialog creates and opens a real file', async () => { await page.getByTitle('새 파일', { exact: true }).click(); await page.getByLabel('파일 또는 폴더 경로').fill('src/new.ts'); await page.getByRole('button', { name: '만들기', exact: true }).click(); await expect(page.locator('.editor-tab.active')).toContainText('new.ts'); assert.equal(await fs.readFile(path.join(fixture, 'src/new.ts'), 'utf8'), ''); });
+  await check('file creation dialog creates and opens a real file', async () => { await page.getByTitle('새 파일', { exact: true }).click(); await page.keyboard.press('Control+s'); await page.getByLabel('새 파일 언어').selectOption('ts'); await page.getByRole('button',{name:'다음',exact:true}).click(); await page.getByLabel('새 파일 이름').fill('src/new.ts'); await page.getByRole('button',{name:'저장',exact:true}).click(); await expect(page.locator('.editor-tab.active')).toContainText('new.ts'); assert.equal(await fs.readFile(path.join(fixture, 'src/new.ts'), 'utf8'), ''); });
   await check('unsaved edits and theme settings survive a renderer restart', async () => {
     await page.locator('.monaco-editor textarea').first().focus(); await page.keyboard.type('// RECOVERY_DRAFT\n');
     await expect(page.locator('.editor-tab.active .dirty-dot')).toBeVisible();

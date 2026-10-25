@@ -10,7 +10,7 @@ async function main(){
   const original='// A real file, never replaced by animation frames.\nexport interface Workspace {\n  name: string;\n  ready: boolean;\n}\n\nexport function welcome(name: string): string {\n  return `Hello, ${name}!`;\n}\n\nconst workspace: Workspace = {\n  name: "Vexel",\n  ready: true,\n};\n\nconsole.log(welcome(workspace.name));\n';
   for(const name of ['alpha.ts','beta.ts','gamma.ts','delta.ts'])await fs.writeFile(path.join(fixture,name),name==='gamma.ts'?'console.log("SINGLE_FILE_RUN_OK");\n':original);
   await fs.writeFile(path.join(fixture,'never-opened.txt'),'Not selected.');
-  const env={...process.env,LUMA_TEST_USERDATA:path.join(work,'effects-userdata-'+Date.now())};delete env.ELECTRON_RUN_AS_NODE;
+  const env={...process.env,LUMA_SKIP_ONBOARDING:'1',LUMA_TEST_USERDATA:path.join(work,'effects-userdata-'+Date.now())};delete env.ELECTRON_RUN_AS_NODE;
   app=await _electron.launch({...(process.env.LUMA_TEST_EXECUTABLE?{executablePath:process.env.LUMA_TEST_EXECUTABLE}:{}),args:process.env.LUMA_TEST_EXECUTABLE?[]:[project],env,timeout:60000});
   const page=await app.firstWindow(),errors=[];page.on('pageerror',e=>{errors.push(e.message);console.log(e.stack);});
   await expect(page.locator('.welcome')).toBeVisible({timeout:30000});
