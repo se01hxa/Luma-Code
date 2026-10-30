@@ -29,7 +29,7 @@ interface API {
   presenceStatus():Promise<PresenceStatus>;setPresence(patch:Partial<PresenceOptions>):Promise<PresenceStatus>;presenceUpdate(meta:Record<string,unknown>):Promise<PresenceStatus>;onPresence(fn:(state:PresenceStatus)=>void):()=>void;
   installCatalog():Promise<InstallLanguage[]>;installStatus():Promise<InstallJob>;installLanguages(ids:string[]):Promise<boolean>;openLanguageSite(id:string):Promise<void>;onInstall(fn:(job:InstallJob)=>void):()=>void;
   setSharing(active:boolean):Promise<PrivacyStatus>;privacyStatus():Promise<PrivacyStatus>;setPrivacy(mode:PrivacyStatus['mode']):Promise<PrivacyStatus>;onPrivacy(fn:(status:PrivacyStatus)=>void):()=>void;
-  saveNewFile(name:string,content:string):Promise<{workspace:Workspace;path:string;sameWorkspace:boolean}|null>;copyText(text: string): Promise<void>;
+  saveNewFile(name:string,content:string):Promise<{workspace:Workspace;path:string;sameWorkspace:boolean}|null>;openHtml(path:string):Promise<{opened:boolean}>;copyText(text: string): Promise<void>;
   bootstrap(): Promise<{ config: Config; version: string; platform: string; initialFolder: string | null;skipOnboarding?:boolean }>;
   chooseFolder(): Promise<string | null>; openFolder(path: string): Promise<Workspace>; refresh(): Promise<Workspace>;
   chooseFile(): Promise<string | null>; openPickedFile(path: string): Promise<{ workspace: Workspace; path: string; sameWorkspace: boolean }>;

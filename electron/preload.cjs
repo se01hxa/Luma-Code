@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('luma', {
   setSharing:invoke('privacy:sharing'),saveNewFile:invoke('file:save-new'),privacyStatus: invoke('privacy:status'), setPrivacy: invoke('privacy:set'), onPrivacy: on('privacy:changed'),
   bootstrap: invoke('bootstrap'), chooseFolder: invoke('workspace:choose'), openFolder: invoke('workspace:open'), refresh: invoke('workspace:refresh'),
   chooseFile: invoke('file:choose'), openPickedFile: invoke('file:open'),
+  openHtml:invoke('html:open'),
   copyText: invoke('clipboard:write'),
   readFile: invoke('file:read'), writeFile: invoke('file:write'), create: invoke('file:create'), rename: invoke('file:rename'), trash: invoke('file:trash'),
   sources: invoke('workspace:sources'), graph: invoke('workspace:graph'), search: invoke('workspace:search'),

@@ -1,6 +1,6 @@
 {
   "name": "vexel",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "private": true,
   "description": "A focused desktop code editor with a project map, custom themes and SSH workspaces.",
   "author": "Vexel",
@@ -9,16 +9,17 @@
     "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && electron . --dev\"",
     "build": "tsc --noEmit && vite build",
     "start": "electron .",
-    "test": "node --test tests/core.test.cjs tests/runtimes.test.cjs tests/privacy-install.test.cjs tests/discord-presence.test.cjs tests/ai.test.cjs",
+    "test": "node --test tests/core.test.cjs tests/runtimes.test.cjs tests/privacy-install.test.cjs tests/discord-presence.test.cjs tests/ai.test.cjs tests/html.test.cjs",
     "test:app": "node tests/app.cjs",
-    "package": "npm run build && electron-builder --win nsis",
+    "package": "npm run build && node scripts/build-windows.cjs",
     "test:effects": "node tests/enhancements.cjs",
     "test:runtimes": "node tests/runtimes-app.cjs",
     "test:privacy": "node tests/privacy-app.cjs",
     "test:discord": "node tests/discord-app.cjs",
     "test:ai": "node tests/ai-app.cjs",
     "test:workflows": "node tests/workflows-app.cjs",
-    "test:recovery": "node tests/recovery-app.cjs"
+    "test:recovery": "node tests/recovery-app.cjs",
+    "test:html": "node tests/html-app.cjs"
   },
   "dependencies": {
     "@lydell/node-pty": "^1.1.0",
@@ -71,28 +72,11 @@
     },
     "win": {
       "target": [
-        "nsis"
+        "dir"
       ],
       "icon": "assets/icon.ico",
       "signAndEditExecutable": true,
       "signExecutable": false
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "allowElevation": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": false,
-      "createStartMenuShortcut": false,
-      "runAfterFinish": true,
-      "deleteAppDataOnUninstall": false,
-      "include": "build/installer.nsh",
-      "installerLanguages": [
-        "ko_KR",
-        "en_US"
-      ],
-      "language": "1042",
-      "artifactName": "Vexel-Setup-${version}.${ext}"
     }
   },
   "type": "module"

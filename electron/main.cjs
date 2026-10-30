@@ -12,6 +12,7 @@ const { createPrivacy } = require('./privacy.cjs');
 const presenceTools = require('./discord-presence.cjs');
 const {createAI}=require('./ai-controller.cjs');
 let privacy, installer, presence, ai;
+const htmlPreview=require('./html-preview.cjs').createPreview({openExternal:url=>shell.openExternal(url)});
 const installTools=require('./installers.cjs');
 const runtimeTools = require('./runtimes.cjs');
 const { buildPlan, powershellCommand } = require('./runners.cjs');
@@ -111,6 +112,7 @@ function stopPython() {
   pythonStarting = undefined;
 }
 async function clearWorkspace() {
+  await htmlPreview.stop();
   await ai?.cancel();ai?.context({});ai?.tools.clear();
   if (watcher) { await watcher.close(); watcher = undefined; }
   stopPython();
@@ -305,6 +307,7 @@ function registerHandlers() {
     if (r.canceled || !r.filePaths[0]) return null;
     const actual = await fs.realpath(r.filePaths[0]); pickedFiles.add(actual); return actual;
   });
+  handle('html:open',relative=>htmlPreview.open(ws(),relative));
   handle('file:open', openPickedFile);
   handle('file:save-new', async (name,content) => {
     if(typeof name!=='string'||!name.trim()||typeof content!=='string'||Buffer.byteLength(content)>2*1024*1024)throw Error('파일 이름과 2 MB 이하의 내용을 확인해주세요.');

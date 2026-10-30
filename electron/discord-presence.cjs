@@ -1,7 +1,7 @@
 const net = require('node:net');
 const { randomUUID } = require('node:crypto');
 const DEFAULTS = { enabled: false, applicationId: '1562471621191540817', showProject: true, showFile: true, showPosition: true, showMouse: true, hideSensitive: true, pipe: 'auto' };
-const LOGO = 'https://raw.githubusercontent.com/se01hxa/Vexel/main/assets/icon.png';
+const LOGO = 'https://raw.githubusercontent.com/sua1dev/Vexel/main/assets/icon.png';
 const text = (value, max = 128) => [...String(value || '').replace(/[\x00-\x1f\x7f]/g, ' ').trim()].slice(0, max).join('');
 const base = value => text(String(value || '').replace(/\\/g, '/').split('/').pop());
 const number = value => Number.isSafeInteger(value) && value > 0 && value <= 10000000 ? value : 0;
